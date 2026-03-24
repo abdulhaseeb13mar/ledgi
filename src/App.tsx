@@ -1,21 +1,21 @@
-import { Link, Outlet } from "@tanstack/react-router";
+import { Suspense } from "react";
+
+import { Toaster } from "@/components/ui/sonner";
+import { Outlet } from "@tanstack/react-router";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <header className="border-b p-4">
-        <nav className="flex gap-4">
-          <Link to="/" className="text-blue-600">
-            Home
-          </Link>
-          <Link to="/about" className="text-blue-600">
-            About
-          </Link>
-        </nav>
-      </header>
-      <main>
+    <div className="min-h-screen bg-gray-50">
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#5f59f7] border-t-transparent" />
+          </div>
+        }
+      >
         <Outlet />
-      </main>
+      </Suspense>
+      <Toaster position="top-center" />
     </div>
   );
 }
