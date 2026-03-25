@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import kamelHisaabLogo from "@/assets/svgs/kamel-hisaab-primary.svg";
 import { auth } from "@/lib/firebase";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -27,7 +28,7 @@ export default function LoginPage() {
   return (
     <div className="rounded-2xl bg-white p-8 shadow-xl">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-[#01017e]">Ledgi</h1>
+        <img src={kamelHisaabLogo} alt="Kamel Hisaab" className="mx-auto h-12 w-auto" />
         <p className="mt-2 text-sm text-gray-500">Sign in to manage your dues</p>
       </div>
 
