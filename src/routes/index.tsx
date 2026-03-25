@@ -17,6 +17,7 @@ const DuesReceivableDetailPage = lazy(() => import("@/pages/dues-receivable-deta
 const ConfirmDuesPage = lazy(() => import("@/pages/confirm-dues"));
 const PendingDuesPage = lazy(() => import("@/pages/pending-dues"));
 const SettingsPage = lazy(() => import("@/pages/settings"));
+const FriendsPage = lazy(() => import("@/pages/friends"));
 
 function requireAuth() {
   if (!auth.currentUser) {
@@ -117,6 +118,12 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
+const friendsRoute = createRoute({
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/friends",
+  component: FriendsPage,
+});
+
 const routeTree = rootRoute.addChildren([
   authLayoutRoute.addChildren([loginRoute, registerRoute]),
   dashboardLayoutRoute.addChildren([
@@ -129,6 +136,7 @@ const routeTree = rootRoute.addChildren([
     confirmDuesRoute,
     pendingDuesRoute,
     settingsRoute,
+    friendsRoute,
   ]),
 ]);
 

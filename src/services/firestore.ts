@@ -2,7 +2,21 @@ import { db } from "@/lib/firebase";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import type { Due } from "@/types/due.types";
 import type { AppUser } from "@/types/user.types";
-import { collection, doc, documentId, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+  writeBatch,
+} from "firebase/firestore";
 
 // ─── Users ───────────────────────────────────────────────
 
@@ -157,4 +171,34 @@ export async function getDuesPendingOthersConfirmation(userId: string): Promise<
   const q = query(collection(db, "dues"), where("owerId", "==", userId), where("status", "==", "resolve_requested"), orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map((d) => d.data() as Due);
+}
+
+// ─── Friends ─────────────────────────────────────────────
+
+export async function addFriend(currentUserId: string, friendUid: string): Promise<void> {
+  await setDoc(doc(db, "users", currentUserId, "friends", friendUid), {
+    uid: friendUid,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function removeFriend(currentUserId: string, friendUid: string): Promise<void> {
+  await deleteDoc(doc(db, "users", currentUserId, "friends", friendUid));
+}
+
+export async function getFriendIds(currentUserId: string): Promise<string[]> {
+  const snap = await getDocs(collection(db, "users", currentUserId, "friends"));
+  return snap.docs.map((d) => d.id);
+}
+
+export async function searchUserByEmail(email: string, currentUserId: string): Promise<AppUser | null> {
+  if (!email.trim()) return null;
+  const lower = email.toLowerCase();
+  const q = query(collection(db, "users"), where("emailLowercase", "==", lower));
+  const snap = await getDocs(q);
+  for (const d of snap.docs) {
+    const user = d.data() as AppUser;
+    if (user.uid !== currentUserId) return user;
+  }
+  return null;
 }

@@ -14,3 +14,9 @@ export const usersKeys = {
   detail: (userId: string) => [...usersKeys.all, "detail", userId] as const,
   byIds: (ids: string[]) => [...usersKeys.all, "by-ids", ...ids.sort()] as const,
 };
+
+export const friendsKeys = {
+  all: ["friends"] as const,
+  list: (userId: string) => [...friendsKeys.all, "list", userId] as const,
+  searchByEmail: (email: string) => [...friendsKeys.all, "search-email", email] as const,
+};

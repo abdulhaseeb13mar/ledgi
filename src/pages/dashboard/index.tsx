@@ -6,7 +6,7 @@ import { useAuthContext } from "@/providers/auth.provider";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import { formatAmount } from "@/utils/format-currency";
 import { Link } from "@tanstack/react-router";
-import { ArrowDownLeft, ArrowUpRight, CheckCircle, Clock, PlusCircle } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, CheckCircle, Clock, PlusCircle, Users } from "lucide-react";
 
 function groupByCurrency(dues: { amount: number; currency?: string }[]): { currency: string; total: number }[] {
   const map = new Map<string, number>();
@@ -75,6 +75,17 @@ export default function DashboardPage() {
           <div>
             <p className="font-semibold">Create a Due</p>
             <p className="text-xs text-white/70">Record a new due on other users</p>
+          </div>
+        </Link>
+
+        <Link
+          to="/friends"
+          className="flex w-full items-center gap-3 rounded-xl border border-indigo-200 bg-white p-4 text-indigo-600 transition-colors hover:bg-indigo-50"
+        >
+          <Users size={22} />
+          <div>
+            <p className="font-semibold">Friends</p>
+            <p className="text-xs text-indigo-400">Manage your friends list</p>
           </div>
         </Link>
 

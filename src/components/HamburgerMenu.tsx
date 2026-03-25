@@ -5,10 +5,11 @@ import { useAuthContext } from "@/providers/auth.provider";
 import { signOut } from "@/utils/auth";
 import { cn } from "@/utils/cn";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { CheckCircle, Clock, Home, LogOut, Menu, PlusCircle, Settings, X } from "lucide-react";
+import { CheckCircle, Clock, Home, LogOut, Menu, PlusCircle, Settings, Users, X } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/", icon: <Home size={20} /> },
+  { label: "Friends", href: "/friends", icon: <Users size={20} /> },
   { label: "Create Due", href: "/dues/create", icon: <PlusCircle size={20} /> },
   {
     label: "Confirm Dues",
