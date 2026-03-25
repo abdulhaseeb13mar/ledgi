@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { UserDueTile } from "@/components/UserDueTile";
 import { useDuesIOweQuery, useUsersByIdsQuery } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
+import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import { useNavigate } from "@tanstack/react-router";
 
 export default function DuesOwedPage() {
@@ -12,9 +13,12 @@ export default function DuesOwedPage() {
   const { data: dues = [], isLoading } = useDuesIOweQuery(user?.uid);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, Map<string, number>>();
     for (const due of dues) {
-      map.set(due.creatorId, (map.get(due.creatorId) ?? 0) + due.amount);
+      const currency = due.currency ?? DEFAULT_CURRENCY;
+      if (!map.has(due.creatorId)) map.set(due.creatorId, new Map());
+      const currencyMap = map.get(due.creatorId)!;
+      currencyMap.set(currency, (currencyMap.get(currency) ?? 0) + due.amount);
     }
     return map;
   }, [dues]);
@@ -40,12 +44,14 @@ export default function DuesOwedPage() {
         <div className="space-y-3">
           {creatorIds.map((creatorId) => {
             const u = users.find((usr) => usr.uid === creatorId);
+            const currencyMap = grouped.get(creatorId) ?? new Map();
+            const amounts = Array.from(currencyMap.entries()).map(([currency, total]) => ({ currency, total }));
             return (
               <UserDueTile
                 key={creatorId}
                 name={u?.name ?? "Loading..."}
                 email={u?.email ?? ""}
-                amount={grouped.get(creatorId) ?? 0}
+                amounts={amounts}
                 variant="owed"
                 onClick={() => navigate({ to: "/dues/owed/$userId", params: { userId: creatorId } })}
               />

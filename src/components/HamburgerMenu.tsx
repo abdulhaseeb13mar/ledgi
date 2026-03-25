@@ -1,10 +1,11 @@
 import { useState } from "react";
 
+import kamelHisaabLogo from "@/assets/svgs/kamel-hisaab-secondary.svg";
 import { useAuthContext } from "@/providers/auth.provider";
 import { signOut } from "@/utils/auth";
 import { cn } from "@/utils/cn";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { CheckCircle, Clock, Home, LogOut, Menu, PlusCircle, X } from "lucide-react";
+import { CheckCircle, Clock, Home, LogOut, Menu, PlusCircle, Settings, X } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/", icon: <Home size={20} /> },
@@ -18,6 +19,11 @@ const navItems = [
     label: "Pending Confirmations",
     href: "/dues/pending",
     icon: <Clock size={20} />,
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: <Settings size={20} />,
   },
 ];
 
@@ -40,7 +46,7 @@ export function HamburgerMenu() {
         <button onClick={() => setOpen(true)} className="text-white" aria-label="Open menu">
           <Menu size={24} />
         </button>
-        <h1 className="text-lg font-bold text-white">Ledgi</h1>
+        <img src={kamelHisaabLogo} alt="Kamel Hisaab" className="h-8 w-auto" />
         <div className="w-6" />
       </header>
 

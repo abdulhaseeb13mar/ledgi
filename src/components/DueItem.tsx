@@ -1,6 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Due } from "@/types/due.types";
 import { cn } from "@/utils/cn";
+import { formatAmount } from "@/utils/format-currency";
 import { formatDate } from "@/utils/format-date";
 
 interface DueItemProps {
@@ -26,7 +27,7 @@ export function DueItem({ due, selectable = false, selected = false, onToggle, s
           <span className="mt-1 inline-block rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">Resolve Requested</span>
         )}
       </div>
-      <span className="text-base font-bold text-gray-900">${due.amount.toFixed(2)}</span>
+      <span className="text-base font-bold text-gray-900">{formatAmount(due.amount, due.currency)}</span>
     </div>
   );
 }

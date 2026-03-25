@@ -1,7 +1,8 @@
 import { db } from "@/lib/firebase";
+import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import type { Due } from "@/types/due.types";
 import type { AppUser } from "@/types/user.types";
-import { collection, doc, documentId, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, where, writeBatch } from "firebase/firestore";
+import { collection, doc, documentId, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 
 // ─── Users ───────────────────────────────────────────────
 
@@ -12,7 +13,12 @@ export async function createUser(uid: string, name: string, email: string): Prom
     email,
     emailLowercase: email.toLowerCase(),
     createdAt: serverTimestamp(),
+    preferredCurrency: DEFAULT_CURRENCY,
   });
+}
+
+export async function updateUserCurrency(uid: string, currency: string): Promise<void> {
+  await updateDoc(doc(db, "users", uid), { preferredCurrency: currency });
 }
 
 export async function getUserById(uid: string): Promise<AppUser | null> {
@@ -60,7 +66,7 @@ export async function searchUsers(searchQuery: string, currentUserId: string): P
 
 // ─── Dues ────────────────────────────────────────────────
 
-export async function createDues(creatorId: string, entries: { owerId: string; amount: number }[], description: string): Promise<void> {
+export async function createDues(creatorId: string, entries: { owerId: string; amount: number }[], description: string, currency: string): Promise<void> {
   const batch = writeBatch(db);
   for (const entry of entries) {
     const ref = doc(collection(db, "dues"));
@@ -69,6 +75,7 @@ export async function createDues(creatorId: string, entries: { owerId: string; a
       creatorId,
       owerId: entry.owerId,
       amount: entry.amount,
+      currency,
       description,
       status: "active",
       createdAt: serverTimestamp(),

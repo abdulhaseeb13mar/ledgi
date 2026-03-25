@@ -6,4 +6,5 @@ export interface AppUser {
   email: string;
   emailLowercase: string;
   createdAt: Timestamp;
+  preferredCurrency?: string;
 }

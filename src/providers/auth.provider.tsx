@@ -10,18 +10,27 @@ interface AuthContextValue {
   user: User | null;
   appUser: AppUser | null;
   loading: boolean;
+  refreshAppUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   appUser: null,
   loading: true,
+  refreshAppUser: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshAppUser = async () => {
+    if (user) {
+      const userData = await getUserById(user.uid);
+      setAppUser(userData);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -38,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
-  return <AuthContext.Provider value={{ user, appUser, loading }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, appUser, loading, refreshAppUser }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuthContext() {

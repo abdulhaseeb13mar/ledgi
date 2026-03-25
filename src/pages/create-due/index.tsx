@@ -4,18 +4,20 @@ import { PageHeader } from "@/components/PageHeader";
 import { UserSearchInput } from "@/components/UserSearchInput";
 import { useCreateDuesMutation } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
+import { CURRENCIES, DEFAULT_CURRENCY } from "@/types/currency.types";
 import type { AppUser } from "@/types/user.types";
 import { useNavigate } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CreateDuePage() {
-  const { user } = useAuthContext();
+  const { user, appUser } = useAuthContext();
   const navigate = useNavigate();
   const createDues = useCreateDuesMutation();
 
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
+  const [currency, setCurrency] = useState<string>(appUser?.preferredCurrency ?? DEFAULT_CURRENCY);
   const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
   const [userAmounts, setUserAmounts] = useState<Record<string, string>>({});
 
@@ -70,6 +72,7 @@ export default function CreateDuePage() {
         creatorId: user!.uid,
         entries,
         description: description.trim(),
+        currency,
       });
       toast.success("Dues created!");
       navigate({ to: "/" });
@@ -95,18 +98,31 @@ export default function CreateDuePage() {
           />
         </div>
 
-        {/* Amount */}
+        {/* Amount + Currency */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-gray-700">Amount</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-            className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#5f59f7] focus:ring-2 focus:ring-[#5f59f7]/20"
-          />
+          <div className="flex gap-2">
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="rounded-lg border border-gray-200 px-3 py-3 text-sm outline-none focus:border-[#5f59f7] focus:ring-2 focus:ring-[#5f59f7]/20"
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.code}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              className="min-w-0 flex-1 rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#5f59f7] focus:ring-2 focus:ring-[#5f59f7]/20"
+            />
+          </div>
         </div>
 
         {/* User Search */}
@@ -125,7 +141,7 @@ export default function CreateDuePage() {
                 onClick={handleApplyToAll}
                 className="rounded-lg bg-[#5f59f7]/10 px-3 py-1.5 text-xs font-medium text-[#5f59f7] hover:bg-[#5f59f7]/20"
               >
-                Apply ${amount || "0"} to all
+                Apply {currency} {amount || "0"} to all
               </button>
             </div>
             <div className="space-y-2">

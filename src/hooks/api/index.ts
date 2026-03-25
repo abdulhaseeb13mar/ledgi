@@ -10,4 +10,4 @@ export {
   useConfirmResolveMutation,
 } from "./dues";
 
-export { useSearchUsersQuery, useUserQuery, useUsersByIdsQuery } from "./users";
+export { useSearchUsersQuery, useUserQuery, useUsersByIdsQuery, useUpdateUserCurrencyMutation } from "./users";

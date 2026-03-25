@@ -1,6 +1,6 @@
 import { usersKeys } from "./query-keys";
-import { getUserById, getUsersByIds, searchUsers } from "@/services/firestore";
-import { useQuery } from "@tanstack/react-query";
+import { getUserById, getUsersByIds, searchUsers, updateUserCurrency } from "@/services/firestore";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useSearchUsersQuery(searchQuery: string, currentUserId: string | undefined) {
   return useQuery({
@@ -23,5 +23,15 @@ export function useUsersByIdsQuery(uids: string[]) {
     queryKey: usersKeys.byIds(uids),
     queryFn: () => getUsersByIds(uids),
     enabled: uids.length > 0,
+  });
+}
+
+export function useUpdateUserCurrencyMutation(uid: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (currency: string) => updateUserCurrency(uid, currency),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: usersKeys.detail(uid) });
+    },
   });
 }

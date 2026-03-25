@@ -1,16 +1,29 @@
+import { useMemo } from "react";
+
 import { PageHeader } from "@/components/PageHeader";
 import { useDuesIOweQuery, useDuesOwedToMeQuery } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
+import { DEFAULT_CURRENCY } from "@/types/currency.types";
+import { formatAmount } from "@/utils/format-currency";
 import { Link } from "@tanstack/react-router";
 import { ArrowDownLeft, ArrowUpRight, CheckCircle, Clock, PlusCircle } from "lucide-react";
+
+function groupByCurrency(dues: { amount: number; currency?: string }[]): { currency: string; total: number }[] {
+  const map = new Map<string, number>();
+  for (const due of dues) {
+    const c = due.currency ?? DEFAULT_CURRENCY;
+    map.set(c, (map.get(c) ?? 0) + due.amount);
+  }
+  return Array.from(map.entries()).map(([currency, total]) => ({ currency, total }));
+}
 
 export default function DashboardPage() {
   const { user } = useAuthContext();
   const { data: duesIOwe = [] } = useDuesIOweQuery(user?.uid);
   const { data: duesOwedToMe = [] } = useDuesOwedToMeQuery(user?.uid);
 
-  const totalIOwe = duesIOwe.reduce((sum, d) => sum + d.amount, 0);
-  const totalOwedToMe = duesOwedToMe.reduce((sum, d) => sum + d.amount, 0);
+  const iOweTotals = useMemo(() => groupByCurrency(duesIOwe), [duesIOwe]);
+  const owedToMeTotals = useMemo(() => groupByCurrency(duesOwedToMe), [duesOwedToMe]);
 
   return (
     <div>
@@ -23,7 +36,17 @@ export default function DashboardPage() {
             <ArrowUpRight size={18} />
             <span className="text-xs font-medium uppercase tracking-wide">You Owe</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-red-600">${totalIOwe.toFixed(2)}</p>
+          <div className="mt-2 flex flex-col gap-0.5">
+            {iOweTotals.length === 0 ? (
+              <p className="text-2xl font-bold text-red-600">{formatAmount(0, DEFAULT_CURRENCY)}</p>
+            ) : (
+              iOweTotals.map((t) => (
+                <p key={t.currency} className="text-2xl font-bold text-red-600">
+                  {formatAmount(t.total, t.currency)}
+                </p>
+              ))
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl bg-green-50 p-4">
@@ -31,7 +54,17 @@ export default function DashboardPage() {
             <ArrowDownLeft size={18} />
             <span className="text-xs font-medium uppercase tracking-wide">Owed to You</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-green-600">${totalOwedToMe.toFixed(2)}</p>
+          <div className="mt-2 flex flex-col gap-0.5">
+            {owedToMeTotals.length === 0 ? (
+              <p className="text-2xl font-bold text-green-600">{formatAmount(0, DEFAULT_CURRENCY)}</p>
+            ) : (
+              owedToMeTotals.map((t) => (
+                <p key={t.currency} className="text-2xl font-bold text-green-600">
+                  {formatAmount(t.total, t.currency)}
+                </p>
+              ))
+            )}
+          </div>
         </div>
       </div>
 

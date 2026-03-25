@@ -63,8 +63,8 @@ export function useDuesPendingOthersConfirmationQuery(userId: string | undefined
 export function useCreateDuesMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { creatorId: string; entries: { owerId: string; amount: number }[]; description: string }) =>
-      createDues(input.creatorId, input.entries, input.description),
+    mutationFn: (input: { creatorId: string; entries: { owerId: string; amount: number }[]; description: string; currency: string }) =>
+      createDues(input.creatorId, input.entries, input.description, input.currency),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: duesKeys.all });
     },
