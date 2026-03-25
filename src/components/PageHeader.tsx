@@ -1,5 +1,3 @@
-import { cn } from "@/utils/cn";
-import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 interface PageHeaderProps {
@@ -8,12 +6,10 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, showBack = false }: PageHeaderProps) {
-  const navigate = useNavigate();
-
   return (
     <div className="mb-6 flex items-center gap-3">
       {showBack && (
-        <button onClick={() => navigate({ to: ".." })} className="rounded-lg p-1 text-gray-600 hover:bg-gray-100">
+        <button onClick={() => window.history.back()} className="rounded-lg p-1 text-gray-600 hover:bg-gray-100">
           <ArrowLeft size={22} />
         </button>
       )}
