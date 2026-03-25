@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function isDueParty() {
+      return signedIn() && (
+        resource.data.creatorId == request.auth.uid ||
+        resource.data.owerId == request.auth.uid
+      );
+    }
+
+    function isValidUserDoc(userId) {
+      return request.resource.data.keys().hasOnly([
+        "uid",
+        "name",
+        "email",
+        "emailLowercase",
+        "createdAt"
+      ]) &&
+      request.resource.data.uid == userId &&
+      request.resource.data.name is string &&
+      request.resource.data.name.size() > 0 &&
+      request.resource.data.name.size() <= 80 &&
+      request.resource.data.email is string &&
+      request.resource.data.email.size() > 0 &&
+      request.resource.data.emailLowercase is string;
+    }
+
+    function isValidDueCreate() {
+      return request.resource.data.keys().hasOnly([
+        "id",
+        "creatorId",
+        "owerId",
+        "amount",
+        "description",
+        "status",
+        "createdAt",
+        "resolveRequestedAt"
+      ]) &&
+      request.resource.data.id is string &&
+      request.resource.data.creatorId == request.auth.uid &&
+      request.resource.data.owerId is string &&
+      request.resource.data.owerId != request.auth.uid &&
+      request.resource.data.amount is number &&
+      request.resource.data.amount > 0 &&
+      request.resource.data.description is string &&
+      request.resource.data.description.size() > 0 &&
+      request.resource.data.description.size() <= 300 &&
+      request.resource.data.status == "active" &&
+      request.resource.data.resolveRequestedAt == null;
+    }
+
+    function isResolveRequestUpdate() {
+      return resource.data.owerId == request.auth.uid &&
+      resource.data.status == "active" &&
+      request.resource.data.creatorId == resource.data.creatorId &&
+      request.resource.data.owerId == resource.data.owerId &&
+      request.resource.data.amount == resource.data.amount &&
+      request.resource.data.description == resource.data.description &&
+      request.resource.data.createdAt == resource.data.createdAt &&
+      request.resource.data.id == resource.data.id &&
+      request.resource.data.status == "resolve_requested";
+    }
+
+    function isResolveConfirmUpdate() {
+      return resource.data.creatorId == request.auth.uid &&
+      resource.data.status == "resolve_requested" &&
+      request.resource.data.creatorId == resource.data.creatorId &&
+      request.resource.data.owerId == resource.data.owerId &&
+      request.resource.data.amount == resource.data.amount &&
+      request.resource.data.description == resource.data.description &&
+      request.resource.data.createdAt == resource.data.createdAt &&
+      request.resource.data.id == resource.data.id &&
+      request.resource.data.status == "resolved";
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create: if isOwner(userId) && isValidUserDoc(userId);
+      allow update: if isOwner(userId) && isValidUserDoc(userId);
+      allow delete: if false;
+
+      match /friends/{friendUid} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          request.resource.data.keys().hasOnly(["uid", "createdAt"]) &&
+          request.resource.data.uid == friendUid;
+        allow delete: if isOwner(userId);
+        allow update: if false;
+      }
+    }
+
+    match /dues/{dueId} {
+      allow read: if isDueParty();
+      allow create: if signedIn() && isValidDueCreate();
+      allow update: if signedIn() && (
+        isResolveRequestUpdate() ||
+        isResolveConfirmUpdate()
+      );
+      allow delete: if false;
+    }
+  }
+}
