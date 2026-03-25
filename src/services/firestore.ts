@@ -2,21 +2,17 @@ import { db } from "@/lib/firebase";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import type { Due } from "@/types/due.types";
 import type { AppUser } from "@/types/user.types";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  documentId,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-  where,
-  writeBatch,
-} from "firebase/firestore";
+import { collection, deleteDoc, doc, documentId, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+
+const OPEN_DUE_STATUSES: Due["status"][] = ["active", "resolve_requested"];
+
+function getTimestampMs(value: Due["createdAt"] | null | undefined): number {
+  return value?.toMillis?.() ?? 0;
+}
+
+function sortByNewestCreatedAt(a: Due, b: Due): number {
+  return getTimestampMs(b.createdAt) - getTimestampMs(a.createdAt);
+}
 
 // ─── Users ───────────────────────────────────────────────
 
@@ -100,44 +96,39 @@ export async function createDues(creatorId: string, entries: { owerId: string; a
 }
 
 export async function getDuesIOwe(userId: string): Promise<Due[]> {
-  const q = query(collection(db, "dues"), where("owerId", "==", userId), where("status", "in", ["active", "resolve_requested"]), orderBy("createdAt", "desc"));
+  const q = query(collection(db, "dues"), where("owerId", "==", userId));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data() as Due);
+  return snap.docs
+    .map((d) => d.data() as Due)
+    .filter((due) => OPEN_DUE_STATUSES.includes(due.status))
+    .sort(sortByNewestCreatedAt);
 }
 
 export async function getDuesOwedToMe(userId: string): Promise<Due[]> {
-  const q = query(
-    collection(db, "dues"),
-    where("creatorId", "==", userId),
-    where("status", "in", ["active", "resolve_requested"]),
-    orderBy("createdAt", "desc"),
-  );
+  const q = query(collection(db, "dues"), where("creatorId", "==", userId));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data() as Due);
+  return snap.docs
+    .map((d) => d.data() as Due)
+    .filter((due) => OPEN_DUE_STATUSES.includes(due.status))
+    .sort(sortByNewestCreatedAt);
 }
 
 export async function getDuesIOweToUser(myId: string, creatorId: string): Promise<Due[]> {
-  const q = query(
-    collection(db, "dues"),
-    where("owerId", "==", myId),
-    where("creatorId", "==", creatorId),
-    where("status", "in", ["active", "resolve_requested"]),
-    orderBy("createdAt", "desc"),
-  );
+  const q = query(collection(db, "dues"), where("owerId", "==", myId));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data() as Due);
+  return snap.docs
+    .map((d) => d.data() as Due)
+    .filter((due) => due.creatorId === creatorId && OPEN_DUE_STATUSES.includes(due.status))
+    .sort(sortByNewestCreatedAt);
 }
 
 export async function getDuesUserOwesToMe(myId: string, owerId: string): Promise<Due[]> {
-  const q = query(
-    collection(db, "dues"),
-    where("creatorId", "==", myId),
-    where("owerId", "==", owerId),
-    where("status", "in", ["active", "resolve_requested"]),
-    orderBy("createdAt", "desc"),
-  );
+  const q = query(collection(db, "dues"), where("creatorId", "==", myId));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data() as Due);
+  return snap.docs
+    .map((d) => d.data() as Due)
+    .filter((due) => due.owerId === owerId && OPEN_DUE_STATUSES.includes(due.status))
+    .sort(sortByNewestCreatedAt);
 }
 
 export async function requestResolve(dueIds: string[]): Promise<void> {
@@ -162,15 +153,15 @@ export async function confirmResolve(dueIds: string[]): Promise<void> {
 }
 
 export async function getDuesPendingMyConfirmation(userId: string): Promise<Due[]> {
-  const q = query(collection(db, "dues"), where("creatorId", "==", userId), where("status", "==", "resolve_requested"), orderBy("createdAt", "desc"));
+  const q = query(collection(db, "dues"), where("creatorId", "==", userId), where("status", "==", "resolve_requested"));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data() as Due);
+  return snap.docs.map((d) => d.data() as Due).sort(sortByNewestCreatedAt);
 }
 
 export async function getDuesPendingOthersConfirmation(userId: string): Promise<Due[]> {
-  const q = query(collection(db, "dues"), where("owerId", "==", userId), where("status", "==", "resolve_requested"), orderBy("createdAt", "desc"));
+  const q = query(collection(db, "dues"), where("owerId", "==", userId), where("status", "==", "resolve_requested"));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data() as Due);
+  return snap.docs.map((d) => d.data() as Due).sort(sortByNewestCreatedAt);
 }
 
 // ─── Friends ─────────────────────────────────────────────
