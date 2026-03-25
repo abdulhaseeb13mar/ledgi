@@ -1,6 +1,6 @@
 {
   "projects": {
     "default": "khaata-ledger",
-    "kamelpay": "kamel-hisaab"
+    "kamelhisaab": "kamel-hisaab"
   }
 }
