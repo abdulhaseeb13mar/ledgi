@@ -19,13 +19,15 @@ const PendingDuesPage = lazy(() => import("@/pages/pending-dues"));
 const SettingsPage = lazy(() => import("@/pages/settings"));
 const FriendsPage = lazy(() => import("@/pages/friends"));
 
-function requireAuth() {
+async function requireAuth() {
+  await auth.authStateReady();
   if (!auth.currentUser) {
     throw redirect({ to: "/login" });
   }
 }
 
-function redirectIfAuthed() {
+async function redirectIfAuthed() {
+  await auth.authStateReady();
   if (auth.currentUser) {
     throw redirect({ to: "/" });
   }
