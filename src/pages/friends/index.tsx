@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { useAddFriendMutation, useFriendsQuery, useRemoveFriendMutation, useSearchUserByEmailQuery } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
 import debounce from "lodash.debounce";
-import { Search, UserMinus, UserPlus } from "lucide-react";
+import { Loader2, Search, UserMinus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 export default function FriendsPage() {
@@ -13,7 +13,7 @@ export default function FriendsPage() {
   const [searchEmail, setSearchEmail] = useState("");
 
   const { data: friends = [], isLoading: friendsLoading } = useFriendsQuery(user?.uid);
-  const { data: searchResult, isLoading: searchLoading } = useSearchUserByEmailQuery(searchEmail, user?.uid);
+  const { data: searchResult, isFetching: searchLoading } = useSearchUserByEmailQuery(searchEmail, user?.uid);
   const addFriend = useAddFriendMutation(user?.uid);
   const removeFriend = useRemoveFriendMutation(user?.uid);
 
@@ -68,6 +68,13 @@ export default function FriendsPage() {
         </div>
 
         {/* Search Result */}
+        {searchEmail && searchLoading && (
+          <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-500">
+            <Loader2 size={16} className="animate-spin" />
+            Searching...
+          </div>
+        )}
+
         {searchEmail && !searchLoading && searchResult && (
           <div className="mt-3 flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4">
             <div>
