@@ -12,7 +12,7 @@ export default function FriendsPage() {
   const [inputValue, setInputValue] = useState("");
   const [searchEmail, setSearchEmail] = useState("");
 
-  const { data: friends = [], isLoading: friendsLoading } = useFriendsQuery(user?.uid);
+  const { data: friends = [], isFetching: friendsLoading } = useFriendsQuery(user?.uid);
   const { data: searchResult, isFetching: searchLoading } = useSearchUserByEmailQuery(searchEmail, user?.uid);
   const addFriend = useAddFriendMutation(user?.uid);
   const removeFriend = useRemoveFriendMutation(user?.uid);
@@ -35,6 +35,8 @@ export default function FriendsPage() {
   const handleAdd = async (friendUid: string) => {
     try {
       await addFriend.mutateAsync(friendUid);
+      setInputValue("");
+      setSearchEmail("");
       toast.success("Friend added!");
     } catch {
       toast.error("Failed to add friend");
