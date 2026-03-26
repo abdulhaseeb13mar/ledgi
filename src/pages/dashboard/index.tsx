@@ -27,39 +27,39 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Dashboard" />
+      <PageHeader title="" />
 
       {/* Summary Cards */}
-      <div className="mb-6 grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-red-50 p-4">
-          <div className="flex items-center gap-2 text-red-500">
-            <ArrowUpRight size={18} />
-            <span className="text-xs font-medium uppercase tracking-wide">You Owe</span>
+
+      <div className="mb-4 grid grid-cols-1 gap-3">
+        <div className="rounded-xl bg-green-50 p-4">
+          <div className="flex items-center gap-2 text-green-600">
+            <ArrowDownLeft size={18} />
+            <span className="text-xs font-medium uppercase tracking-wide">Total Owed to You</span>
           </div>
           <div className="mt-2 flex flex-col gap-0.5">
-            {iOweTotals.length === 0 ? (
-              <p className="text-2xl font-bold text-red-600">{formatAmount(0, DEFAULT_CURRENCY)}</p>
+            {owedToMeTotals.length === 0 ? (
+              <p className="text-xl font-bold text-green-600">{formatAmount(0, DEFAULT_CURRENCY)}</p>
             ) : (
-              iOweTotals.map((t) => (
-                <p key={t.currency} className="text-2xl font-bold text-red-600">
+              owedToMeTotals.map((t) => (
+                <p key={t.currency} className="text-xl font-bold text-green-600">
                   {formatAmount(t.total, t.currency)}
                 </p>
               ))
             )}
           </div>
         </div>
-
-        <div className="rounded-xl bg-green-50 p-4">
-          <div className="flex items-center gap-2 text-green-600">
-            <ArrowDownLeft size={18} />
-            <span className="text-xs font-medium uppercase tracking-wide">Owed to You</span>
+        <div className="rounded-xl bg-red-50 p-4">
+          <div className="flex items-center gap-2 text-red-500">
+            <ArrowUpRight size={18} />
+            <span className="text-xs font-medium uppercase tracking-wide">Total You Owe</span>
           </div>
           <div className="mt-2 flex flex-col gap-0.5">
-            {owedToMeTotals.length === 0 ? (
-              <p className="text-2xl font-bold text-green-600">{formatAmount(0, DEFAULT_CURRENCY)}</p>
+            {iOweTotals.length === 0 ? (
+              <p className="text-xl font-bold text-red-600">{formatAmount(0, DEFAULT_CURRENCY)}</p>
             ) : (
-              owedToMeTotals.map((t) => (
-                <p key={t.currency} className="text-2xl font-bold text-green-600">
+              iOweTotals.map((t) => (
+                <p key={t.currency} className="text-xl font-bold text-red-600">
                   {formatAmount(t.total, t.currency)}
                 </p>
               ))
@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
       {/* Action Buttons */}
       <div className="space-y-3">
-        <Link to="/dues/create" className="flex w-full items-center gap-3 rounded-xl bg-[#01017e] p-4 text-white transition-colors hover:bg-[#01017e]/90">
+        <Link to="/dues/create" className="flex w-full items-center gap-3 rounded-xl bg-secondary p-4 text-white transition-colors hover:bg-[#01017e]/90">
           <PlusCircle size={22} />
           <div>
             <p className="font-semibold">Create a Due</p>
