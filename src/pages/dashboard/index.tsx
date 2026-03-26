@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const { user } = useAuthContext();
   const { data: duesIOwe = [], isFetching: isLoadingDuesIOwe } = useDuesIOweQuery(user?.uid);
   const { data: duesOwedToMe = [], isFetching: isLoadingDuesOwedToMe } = useDuesOwedToMeQuery(user?.uid);
-  const { isFetching: isLoadingPendingConfirmations } = useDuesPendingMyConfirmationQuery(user?.uid);
+  const { data: pendingConfirmations = [], isFetching: isLoadingPendingConfirmations } = useDuesPendingMyConfirmationQuery(user?.uid);
 
   const iOweTotals = useMemo(() => groupByCurrency(duesIOwe), [duesIOwe]);
   const owedToMeTotals = useMemo(() => groupByCurrency(duesOwedToMe), [duesOwedToMe]);
@@ -114,13 +114,18 @@ export default function DashboardPage() {
 
         <Link
           to="/dues/confirm"
-          className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-[#5f59f7] transition-colors hover:bg-gray-50"
+          className="relative flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-[#5f59f7] transition-colors hover:bg-gray-50"
         >
           {isLoadingPendingConfirmations ? <Loader2 size={22} className="animate-spin" /> : <CheckCircle size={22} />}
           <div>
             <p className="font-semibold">Confirm Resolved Dues</p>
             <p className="text-xs text-gray-500">Confirm dues that have been paid</p>
           </div>
+          {pendingConfirmations.length > 0 && (
+            <div className="absolute -right-1 -top-1 flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-sm ring-2 ring-white">
+              {pendingConfirmations.length > 99 ? "99+" : pendingConfirmations.length}
+            </div>
+          )}
         </Link>
 
         <Link
