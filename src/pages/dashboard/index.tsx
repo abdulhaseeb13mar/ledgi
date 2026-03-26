@@ -6,7 +6,7 @@ import { useAuthContext } from "@/providers/auth.provider";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import { formatAmount } from "@/utils/format-currency";
 import { Link } from "@tanstack/react-router";
-import { ArrowDownLeft, ArrowUpRight, CheckCircle, Clock, PlusCircle, Users } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, CheckCircle, Clock, Loader2, PlusCircle, Users } from "lucide-react";
 
 function groupByCurrency(dues: { amount: number; currency?: string }[]): { currency: string; total: number }[] {
   const map = new Map<string, number>();
@@ -19,8 +19,8 @@ function groupByCurrency(dues: { amount: number; currency?: string }[]): { curre
 
 export default function DashboardPage() {
   const { user } = useAuthContext();
-  const { data: duesIOwe = [] } = useDuesIOweQuery(user?.uid);
-  const { data: duesOwedToMe = [] } = useDuesOwedToMeQuery(user?.uid);
+  const { data: duesIOwe = [], isFetching: isLoadingDuesIOwe } = useDuesIOweQuery(user?.uid);
+  const { data: duesOwedToMe = [], isFetching: isLoadingDuesOwedToMe } = useDuesOwedToMeQuery(user?.uid);
 
   const iOweTotals = useMemo(() => groupByCurrency(duesIOwe), [duesIOwe]);
   const owedToMeTotals = useMemo(() => groupByCurrency(duesOwedToMe), [duesOwedToMe]);
@@ -34,7 +34,7 @@ export default function DashboardPage() {
       <div className="mb-4 grid grid-cols-1 gap-3">
         <div className="rounded-xl bg-green-50 p-4">
           <div className="flex items-center gap-2 text-green-600">
-            <ArrowDownLeft size={18} />
+            {isLoadingDuesOwedToMe ? <Loader2 size={18} className="animate-spin" /> : <ArrowDownLeft size={18} />}
             <span className="text-xs font-medium uppercase tracking-wide">Total Owed to You</span>
           </div>
           <div className="mt-2 flex flex-col gap-0.5">
@@ -51,7 +51,7 @@ export default function DashboardPage() {
         </div>
         <div className="rounded-xl bg-red-50 p-4">
           <div className="flex items-center gap-2 text-red-500">
-            <ArrowUpRight size={18} />
+            {isLoadingDuesIOwe ? <Loader2 size={18} className="animate-spin" /> : <ArrowUpRight size={18} />}
             <span className="text-xs font-medium uppercase tracking-wide">Total You Owe</span>
           </div>
           <div className="mt-2 flex flex-col gap-0.5">
