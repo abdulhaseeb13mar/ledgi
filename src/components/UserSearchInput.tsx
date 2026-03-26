@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { EMAIL_REGEX } from "@/constants/misc";
 import { useAddFriendMutation, useFriendsQuery, useSearchUserByEmailQuery, useSearchUsersQuery } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
 import type { AppUser } from "@/types/user.types";
@@ -25,12 +26,11 @@ export function UserSearchInput({ selectedUsers, onSelect, onRemove }: UserSearc
   const [addedFriends, setAddedFriends] = useState<Set<string>>(new Set());
   const { user } = useAuthContext();
 
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isValidEmailQuery = EMAIL_REGEX.test(searchQuery);
 
   const { data: friends = [] } = useFriendsQuery(user?.uid);
   const { data: globalResults = [], isLoading: isSearchLoading } = useSearchUsersQuery(isValidEmailQuery ? searchQuery : "", user?.uid);
-  const { data: emailSearchResult, isLoading: isEmailSearchLoading } = useSearchUserByEmailQuery(isValidEmailQuery ? searchQuery : "", user?.uid);
+  const { data: emailSearchResult, isLoading: isEmailSearchLoading } = useSearchUserByEmailQuery(searchQuery, user?.uid);
   const addFriendMutation = useAddFriendMutation(user?.uid);
 
   const debouncedSearch = useMemo(

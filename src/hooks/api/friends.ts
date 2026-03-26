@@ -1,4 +1,5 @@
 import { friendsKeys } from "./query-keys";
+import { EMAIL_REGEX } from "@/constants/misc";
 import { addFriend, getFriendIds, getUsersByIds, removeFriend, searchUserByEmail } from "@/services/firestore";
 import type { AppUser } from "@/types/user.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,10 +17,13 @@ export function useFriendsQuery(userId: string | undefined) {
 }
 
 export function useSearchUserByEmailQuery(email: string, currentUserId: string | undefined) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const isValidEmail = EMAIL_REGEX.test(normalizedEmail);
+
   return useQuery<AppUser | null>({
-    queryKey: friendsKeys.searchByEmail(email),
-    queryFn: () => searchUserByEmail(email, currentUserId!),
-    enabled: !!email.trim() && !!currentUserId,
+    queryKey: friendsKeys.searchByEmail(normalizedEmail),
+    queryFn: () => searchUserByEmail(normalizedEmail, currentUserId!),
+    enabled: isValidEmail && !!currentUserId,
   });
 }
 
