@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { PageHeader } from "@/components/PageHeader";
-import { useDuesIOweQuery, useDuesOwedToMeQuery } from "@/hooks/api";
+import { useDuesIOweQuery, useDuesOwedToMeQuery, useDuesPendingMyConfirmationQuery } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import { formatAmount } from "@/utils/format-currency";
@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const { user } = useAuthContext();
   const { data: duesIOwe = [], isFetching: isLoadingDuesIOwe } = useDuesIOweQuery(user?.uid);
   const { data: duesOwedToMe = [], isFetching: isLoadingDuesOwedToMe } = useDuesOwedToMeQuery(user?.uid);
+  const { isFetching: isLoadingPendingConfirmations } = useDuesPendingMyConfirmationQuery(user?.uid);
 
   const iOweTotals = useMemo(() => groupByCurrency(duesIOwe), [duesIOwe]);
   const owedToMeTotals = useMemo(() => groupByCurrency(duesOwedToMe), [duesOwedToMe]);
@@ -115,7 +116,7 @@ export default function DashboardPage() {
           to="/dues/confirm"
           className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-[#5f59f7] transition-colors hover:bg-gray-50"
         >
-          <CheckCircle size={22} />
+          {isLoadingPendingConfirmations ? <Loader2 size={22} className="animate-spin" /> : <CheckCircle size={22} />}
           <div>
             <p className="font-semibold">Confirm Resolved Dues</p>
             <p className="text-xs text-gray-500">Confirm dues that have been paid</p>
