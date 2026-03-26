@@ -3,23 +3,38 @@ import { useState } from "react";
 import kamelHisaabLogo from "@/assets/svgs/kamel-hisaab-primary.svg";
 import { auth } from "@/lib/firebase";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { toast } from "sonner";
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate({ to: "/" });
-    } catch {
-      toast.error("Invalid email or password");
+      await sendPasswordResetEmail(auth, email);
+      toast.success("If an account exists for this email, a reset link has been sent.");
+      navigate({ to: "/login" });
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        if (error.code === "auth/user-not-found") {
+          toast.success("If an account exists for this email, a reset link has been sent.");
+          navigate({ to: "/login" });
+          return;
+        }
+
+        if (error.code === "auth/too-many-requests") {
+          toast.error("Too many attempts. Please try again later.");
+          return;
+        }
+      }
+
+      toast.error("Failed to send reset email. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -29,7 +44,7 @@ export default function LoginPage() {
     <div className="rounded-2xl bg-white p-8 shadow-xl">
       <div className="mb-8 text-center">
         <img src={kamelHisaabLogo} alt="Kamel Hisaab" className="mx-auto h-12 w-auto" />
-        <p className="mt-2 text-sm text-gray-500">Sign in to manage your dues</p>
+        <p className="mt-2 text-sm text-gray-500">Enter your email and we&apos;ll send you a password reset link.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -45,37 +60,19 @@ export default function LoginPage() {
           />
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#5f59f7] focus:ring-2 focus:ring-[#5f59f7]/20"
-            placeholder="••••••••"
-          />
-        </div>
-
-        <div className="text-right">
-          <Link to="/forgot-password" className="text-sm font-medium text-[#0159f8]">
-            Forgot password?
-          </Link>
-        </div>
-
         <button
           type="submit"
           disabled={loading}
           className="w-full rounded-lg bg-[#5f59f7] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#4e48e0] disabled:opacity-50"
         >
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? "Sending reset link..." : "Send Reset Link"}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
-        Don&apos;t have an account?{" "}
-        <Link to="/register" className="font-medium text-[#0159f8]">
-          Register
+        Remember your password?{" "}
+        <Link to="/login" className="font-medium text-[#0159f8]">
+          Sign In
         </Link>
       </p>
     </div>

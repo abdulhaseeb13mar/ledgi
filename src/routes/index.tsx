@@ -8,6 +8,7 @@ import { createRootRoute, createRoute, createRouter, redirect } from "@tanstack/
 
 const LoginPage = lazy(() => import("@/pages/login"));
 const RegisterPage = lazy(() => import("@/pages/register"));
+const ForgotPasswordPage = lazy(() => import("@/pages/forgot-password"));
 const DashboardPage = lazy(() => import("@/pages/dashboard"));
 const CreateDuePage = lazy(() => import("@/pages/create-due"));
 const DuesOwedPage = lazy(() => import("@/pages/dues-owed"));
@@ -56,6 +57,12 @@ const registerRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
   path: "/register",
   component: RegisterPage,
+});
+
+const forgotPasswordRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/forgot-password",
+  component: ForgotPasswordPage,
 });
 
 // Dashboard layout
@@ -127,7 +134,7 @@ const friendsRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  authLayoutRoute.addChildren([loginRoute, registerRoute]),
+  authLayoutRoute.addChildren([loginRoute, registerRoute, forgotPasswordRoute]),
   dashboardLayoutRoute.addChildren([
     dashboardRoute,
     createDueRoute,
