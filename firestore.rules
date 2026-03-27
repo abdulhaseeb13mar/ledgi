@@ -82,6 +82,19 @@ service cloud.firestore {
       request.resource.data.status == "resolved";
     }
 
+    function isResolveRejectUpdate() {
+      return resource.data.creatorId == request.auth.uid &&
+      resource.data.status == "resolve_requested" &&
+      request.resource.data.creatorId == resource.data.creatorId &&
+      request.resource.data.owerId == resource.data.owerId &&
+      request.resource.data.amount == resource.data.amount &&
+      request.resource.data.description == resource.data.description &&
+      request.resource.data.createdAt == resource.data.createdAt &&
+      request.resource.data.id == resource.data.id &&
+      request.resource.data.status == "active" &&
+      request.resource.data.resolveRequestedAt == null;
+    }
+
     match /users/{userId} {
       allow read: if signedIn();
       allow create: if isOwner(userId) && isValidUserDoc(userId);
@@ -103,7 +116,8 @@ service cloud.firestore {
       allow create: if signedIn() && isValidDueCreate();
       allow update: if signedIn() && (
         isResolveRequestUpdate() ||
-        isResolveConfirmUpdate()
+        isResolveConfirmUpdate() ||
+        isResolveRejectUpdate()
       );
       allow delete: if false;
     }
