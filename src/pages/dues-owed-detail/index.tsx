@@ -3,6 +3,7 @@ import { useState } from "react";
 import { DueItem } from "@/components/DueItem";
 import { PageHeader } from "@/components/PageHeader";
 import { useDuesIOweToUserQuery, useRequestResolveMutation, useUserQuery } from "@/hooks/api";
+import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/providers/auth.provider";
 import { useParams } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -62,7 +63,12 @@ export default function DuesOwedDetailPage() {
               <h2 className="mb-2 text-sm font-semibold text-gray-500">Active Dues</h2>
               <div className="space-y-2">
                 {activeDues.map((due) => (
-                  <DueItem key={due.id} due={due} selectable selected={selectedIds.has(due.id)} onToggle={toggleSelection} />
+                  <div
+                    key={due.id}
+                    className={cn("rounded-xl border-2 transition-colors", selectedIds.has(due.id) ? "border-[#5f59f7]" : "border-transparent")}
+                  >
+                    <DueItem due={due} selectable selected={selectedIds.has(due.id)} onToggle={toggleSelection} />
+                  </div>
                 ))}
               </div>
             </div>

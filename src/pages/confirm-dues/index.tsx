@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { DueItem } from "@/components/DueItem";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirmResolveMutation, useDuesPendingMyConfirmationQuery, useUsersByIdsQuery } from "@/hooks/api";
+import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/providers/auth.provider";
 import { toast } from "sonner";
 
@@ -58,14 +59,15 @@ export default function ConfirmDuesPage() {
             {dues.map((due) => {
               const ower = users.find((u) => u.uid === due.owerId);
               return (
-                <DueItem
-                  key={due.id}
-                  due={due}
-                  selectable
-                  selected={selectedIds.has(due.id)}
-                  onToggle={toggleSelection}
-                  showUser={ower ? `${ower.name} (${ower.email})` : undefined}
-                />
+                <div key={due.id} className={cn("rounded-xl border-2 transition-colors", selectedIds.has(due.id) ? "border-[#5f59f7]" : "border-transparent")}>
+                  <DueItem
+                    due={due}
+                    selectable
+                    selected={selectedIds.has(due.id)}
+                    onToggle={toggleSelection}
+                    showUser={ower ? `${ower.name} (${ower.email})` : undefined}
+                  />
+                </div>
               );
             })}
           </div>
