@@ -10,7 +10,7 @@ import { useNavigate } from "@tanstack/react-router";
 export default function DuesOwedPage() {
   const { user } = useAuthContext();
   const navigate = useNavigate();
-  const { data: dues = [], isLoading } = useDuesIOweQuery(user?.uid);
+  const { data: dues = [], isLoading, refetch: refetchDues } = useDuesIOweQuery(user?.uid);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Map<string, number>>();
@@ -24,7 +24,16 @@ export default function DuesOwedPage() {
   }, [dues]);
 
   const creatorIds = useMemo(() => Array.from(grouped.keys()), [grouped]);
-  const { data: users = [] } = useUsersByIdsQuery(creatorIds);
+  const { data: users = [], refetch: refetchUsers } = useUsersByIdsQuery(creatorIds);
+
+  const refreshData = async () => {
+    try {
+      await Promise.all([refetchDues(), creatorIds.length > 0 ? refetchUsers() : Promise.resolve()]);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -36,7 +45,7 @@ export default function DuesOwedPage() {
 
   return (
     <div>
-      <PageHeader title="Dues I Owe" showBack />
+      <PageHeader title="Dues I Owe" showBack refreshFunction={refreshData} />
 
       {creatorIds.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">You don&apos;t owe anyone! 🎉</p>

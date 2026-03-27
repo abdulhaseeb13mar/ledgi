@@ -7,10 +7,19 @@ import { useAuthContext } from "@/providers/auth.provider";
 
 export default function PendingDuesPage() {
   const { user } = useAuthContext();
-  const { data: dues = [], isLoading } = useDuesPendingOthersConfirmationQuery(user?.uid);
+  const { data: dues = [], isLoading, refetch: refetchDues } = useDuesPendingOthersConfirmationQuery(user?.uid);
 
   const creatorIds = useMemo(() => [...new Set(dues.map((d) => d.creatorId))], [dues]);
-  const { data: users = [] } = useUsersByIdsQuery(creatorIds);
+  const { data: users = [], refetch: refetchUsers } = useUsersByIdsQuery(creatorIds);
+
+  const refreshData = async () => {
+    try {
+      await Promise.all([refetchDues(), creatorIds.length > 0 ? refetchUsers() : Promise.resolve()]);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -22,7 +31,7 @@ export default function PendingDuesPage() {
 
   return (
     <div>
-      <PageHeader title="Pending Confirmations" showBack />
+      <PageHeader title="Pending Confirmations" showBack refreshFunction={refreshData} />
 
       {dues.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">No dues pending confirmation</p>

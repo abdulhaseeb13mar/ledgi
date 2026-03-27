@@ -9,13 +9,13 @@ import { toast } from "sonner";
 
 export default function ConfirmDuesPage() {
   const { user } = useAuthContext();
-  const { data: dues = [], isLoading } = useDuesPendingMyConfirmationQuery(user?.uid);
+  const { data: dues = [], isLoading, refetch: refetchDues } = useDuesPendingMyConfirmationQuery(user?.uid);
   const confirmResolve = useConfirmResolveMutation();
   const rejectResolve = useRejectResolveMutation();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const owerIds = useMemo(() => [...new Set(dues.map((d) => d.owerId))], [dues]);
-  const { data: users = [] } = useUsersByIdsQuery(owerIds);
+  const { data: users = [], refetch: refetchUsers } = useUsersByIdsQuery(owerIds);
 
   const toggleSelection = (id: string) => {
     setSelectedIds((prev) => {
@@ -54,6 +54,15 @@ export default function ConfirmDuesPage() {
     }
   };
 
+  const refreshData = async () => {
+    try {
+      await Promise.all([refetchDues(), owerIds.length > 0 ? refetchUsers() : Promise.resolve()]);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -64,7 +73,7 @@ export default function ConfirmDuesPage() {
 
   return (
     <div>
-      <PageHeader title="Confirm Resolved Dues" showBack />
+      <PageHeader title="Confirm Resolved Dues" showBack refreshFunction={refreshData} />
 
       {dues.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">No dues pending your confirmation</p>

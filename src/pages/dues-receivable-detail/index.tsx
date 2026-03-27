@@ -7,8 +7,17 @@ import { useParams } from "@tanstack/react-router";
 export default function DuesReceivableDetailPage() {
   const { userId } = useParams({ strict: false }) as { userId: string };
   const { user } = useAuthContext();
-  const { data: targetUser } = useUserQuery(userId);
-  const { data: dues = [], isLoading } = useDuesUserOwesToMeQuery(user?.uid, userId);
+  const { data: targetUser, refetch: refetchUser } = useUserQuery(userId);
+  const { data: dues = [], isLoading, refetch: refetchDues } = useDuesUserOwesToMeQuery(user?.uid, userId);
+
+  const refreshData = async () => {
+    try {
+      await Promise.all([refetchDues(), refetchUser()]);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -23,7 +32,7 @@ export default function DuesReceivableDetailPage() {
 
   return (
     <div>
-      <PageHeader title={`${targetUser?.name ?? "..."}'s Dues`} showBack />
+      <PageHeader title={`${targetUser?.name ?? "..."}'s Dues`} showBack refreshFunction={refreshData} />
 
       {dues.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">No dues found</p>

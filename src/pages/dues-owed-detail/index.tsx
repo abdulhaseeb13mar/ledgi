@@ -12,10 +12,19 @@ import { toast } from "sonner";
 export default function DuesOwedDetailPage() {
   const { userId } = useParams({ strict: false }) as { userId: string };
   const { user } = useAuthContext();
-  const { data: targetUser } = useUserQuery(userId);
-  const { data: dues = [], isLoading } = useDuesIOweToUserQuery(user?.uid, userId);
+  const { data: targetUser, refetch: refetchUser } = useUserQuery(userId);
+  const { data: dues = [], isLoading, refetch: refetchDues } = useDuesIOweToUserQuery(user?.uid, userId);
   const requestResolve = useRequestResolveMutation();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const refreshData = async () => {
+    try {
+      await Promise.all([refetchDues(), refetchUser()]);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   const activeDues = dues.filter((d) => d.status === "active");
   const resolveRequestedDues = dues.filter((d) => d.status === "resolve_requested");
@@ -53,7 +62,7 @@ export default function DuesOwedDetailPage() {
 
   return (
     <div>
-      <PageHeader title={`Dues to ${targetUser?.name ?? "..."}`} showBack />
+      <PageHeader title={`Dues to ${targetUser?.name ?? "..."}`} showBack refreshFunction={refreshData} />
 
       {dues.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">No dues found</p>
