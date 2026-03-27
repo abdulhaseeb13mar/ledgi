@@ -18,7 +18,7 @@ export function DueItem({ due, selectable = false, selected = false, onToggle, s
       className={cn("flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm", selectable && "cursor-pointer hover:bg-gray-50")}
       onClick={() => selectable && onToggle?.(due.id)}
     >
-      {selectable && <Checkbox checked={selected} onCheckedChange={() => onToggle?.(due.id)} className="mt-0.5" />}
+      {selectable && <Checkbox checked={selected} className="pointer-events-none mt-0.5" />}
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-gray-900">{due.description}</p>
         {showUser && <p className="text-xs text-gray-500">{showUser}</p>}
