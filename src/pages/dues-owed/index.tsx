@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
-import { PageHeader } from "@/components/PageHeader";
 import { UserDueTile } from "@/components/UserDueTile";
 import { useDuesIOweQuery, useUsersByIdsQuery } from "@/hooks/api";
+import { ScrollablePageLayout } from "@/layouts/ScrollablePageLayout";
 import { useAuthContext } from "@/providers/auth.provider";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import { useNavigate } from "@tanstack/react-router";
@@ -44,9 +44,13 @@ export default function DuesOwedPage() {
   }
 
   return (
-    <div>
-      <PageHeader title="Dues I Owe" showBack refreshFunction={refreshData} />
-
+    <ScrollablePageLayout
+      headerProps={{
+        title: "Dues I Owe",
+        showBack: true,
+        refreshFunction: refreshData,
+      }}
+    >
       {creatorIds.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">You don&apos;t owe anyone! 🎉</p>
       ) : (
@@ -68,6 +72,6 @@ export default function DuesOwedPage() {
           })}
         </div>
       )}
-    </div>
+    </ScrollablePageLayout>
   );
 }

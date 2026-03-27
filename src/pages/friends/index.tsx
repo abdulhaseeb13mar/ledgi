@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
-import { PageHeader } from "@/components/PageHeader";
 import { useAddFriendMutation, useFriendsQuery, useRemoveFriendMutation, useSearchUserByEmailQuery } from "@/hooks/api";
+import { ScrollablePageLayout } from "@/layouts/ScrollablePageLayout";
 import { useAuthContext } from "@/providers/auth.provider";
 import debounce from "lodash.debounce";
 import { Loader2, Search, UserMinus, UserPlus } from "lucide-react";
@@ -53,9 +53,7 @@ export default function FriendsPage() {
   };
 
   return (
-    <div>
-      <PageHeader title="Friends" showBack />
-
+    <ScrollablePageLayout headerProps={{ title: "Friends", showBack: true }}>
       {/* Search Section */}
       <div className="mb-6">
         <div className="relative">
@@ -135,6 +133,6 @@ export default function FriendsPage() {
           </div>
         )}
       </div>
-    </div>
+    </ScrollablePageLayout>
   );
 }

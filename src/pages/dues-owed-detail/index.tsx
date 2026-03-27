@@ -1,9 +1,9 @@
 import { useState } from "react";
 
 import { DueItem } from "@/components/DueItem";
-import { PageHeader } from "@/components/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDuesIOweToUserQuery, useRequestResolveMutation, useUserQuery } from "@/hooks/api";
+import { ScrollablePageLayout } from "@/layouts/ScrollablePageLayout";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/providers/auth.provider";
 import { useParams } from "@tanstack/react-router";
@@ -60,10 +60,26 @@ export default function DuesOwedDetailPage() {
     );
   }
 
-  return (
-    <div>
-      <PageHeader title={`Dues to ${targetUser?.name ?? "..."}`} showBack refreshFunction={refreshData} />
+  const renderSubmitSection = () =>
+    activeDues.length > 0 && (
+      <button
+        onClick={handleRequestConfirm}
+        disabled={selectedIds.size === 0 || requestResolve.isPending}
+        className="w-full rounded-xl bg-secondary py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#4e48e0] disabled:opacity-50"
+      >
+        {requestResolve.isPending ? "Sending..." : `Request ${targetUser?.name ?? "User"} to Confirm Paid`}
+      </button>
+    );
 
+  return (
+    <ScrollablePageLayout
+      headerProps={{
+        title: `Dues to ${targetUser?.name ?? "..."}`,
+        showBack: true,
+        refreshFunction: refreshData,
+      }}
+      submitSection={renderSubmitSection()}
+    >
       {dues.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">No dues found</p>
       ) : (
@@ -92,16 +108,6 @@ export default function DuesOwedDetailPage() {
                 ))}
               </div>
             )}
-
-            {activeDues.length > 0 && (
-              <button
-                onClick={handleRequestConfirm}
-                disabled={selectedIds.size === 0 || requestResolve.isPending}
-                className="mt-4 w-full rounded-xl bg-[#5f59f7] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#4e48e0] disabled:opacity-50"
-              >
-                {requestResolve.isPending ? "Sending..." : `Request ${targetUser?.name ?? "User"} to Confirm Paid`}
-              </button>
-            )}
           </TabsContent>
 
           <TabsContent value="pending">
@@ -117,6 +123,6 @@ export default function DuesOwedDetailPage() {
           </TabsContent>
         </Tabs>
       )}
-    </div>
+    </ScrollablePageLayout>
   );
 }

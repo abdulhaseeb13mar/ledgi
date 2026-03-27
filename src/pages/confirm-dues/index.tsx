@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 
 import { DueItem } from "@/components/DueItem";
-import { PageHeader } from "@/components/PageHeader";
 import { useConfirmResolveMutation, useDuesPendingMyConfirmationQuery, useRejectResolveMutation, useUsersByIdsQuery } from "@/hooks/api";
+import { ScrollablePageLayout } from "@/layouts/ScrollablePageLayout";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/providers/auth.provider";
 import { toast } from "sonner";
@@ -71,49 +71,57 @@ export default function ConfirmDuesPage() {
     );
   }
 
+  const renderSubmitSection = () =>
+    dues.length > 0 && (
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
+        <button
+          onClick={handleReject}
+          disabled={selectedIds.size === 0 || confirmResolve.isPending || rejectResolve.isPending}
+          className="w-full rounded-xl bg-red-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+        >
+          {rejectResolve.isPending ? "Rejecting..." : `Reject ${selectedIds.size} Selected`}
+        </button>
+        <button
+          onClick={handleConfirm}
+          disabled={selectedIds.size === 0 || confirmResolve.isPending || rejectResolve.isPending}
+          className="w-full rounded-xl bg-green-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+        >
+          {confirmResolve.isPending ? "Confirming..." : `Confirm ${selectedIds.size} Selected`}
+        </button>
+      </div>
+    );
+
   return (
-    <div>
-      <PageHeader title="Confirm Resolved Dues" showBack refreshFunction={refreshData} />
-
+    <ScrollablePageLayout
+      headerProps={{
+        title: "Confirm Resolved Dues",
+        showBack: true,
+        refreshFunction: refreshData,
+      }}
+      submitSection={renderSubmitSection()}
+    >
       {dues.length === 0 ? (
-        <p className="py-12 text-center text-sm text-gray-500">No dues pending your confirmation</p>
+        <div className="flex h-full items-center justify-center">
+          <p className="py-12 text-center text-sm text-gray-500">No dues pending your confirmation</p>
+        </div>
       ) : (
-        <>
-          <div className="space-y-2">
-            {dues.map((due) => {
-              const ower = users.find((u) => u.uid === due.owerId);
-              return (
-                <div key={due.id} className={cn("rounded-xl border-2 transition-colors", selectedIds.has(due.id) ? "border-[#5f59f7]" : "border-transparent")}>
-                  <DueItem
-                    due={due}
-                    selectable
-                    selected={selectedIds.has(due.id)}
-                    onToggle={toggleSelection}
-                    showUser={ower ? `${ower.name} (${ower.email})` : undefined}
-                  />
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-2">
-            <button
-              onClick={handleReject}
-              disabled={selectedIds.size === 0 || confirmResolve.isPending || rejectResolve.isPending}
-              className="w-full rounded-xl bg-red-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
-            >
-              {rejectResolve.isPending ? "Rejecting..." : `Reject ${selectedIds.size} Selected`}
-            </button>
-            <button
-              onClick={handleConfirm}
-              disabled={selectedIds.size === 0 || confirmResolve.isPending || rejectResolve.isPending}
-              className="w-full rounded-xl bg-green-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-            >
-              {confirmResolve.isPending ? "Confirming..." : `Confirm ${selectedIds.size} Selected`}
-            </button>
-          </div>
-        </>
+        <div className="space-y-2">
+          {dues.map((due) => {
+            const ower = users.find((u) => u.uid === due.owerId);
+            return (
+              <div key={due.id} className={cn("rounded-xl border-2 transition-colors", selectedIds.has(due.id) ? "border-[#5f59f7]" : "border-transparent")}>
+                <DueItem
+                  due={due}
+                  selectable
+                  selected={selectedIds.has(due.id)}
+                  onToggle={toggleSelection}
+                  showUser={ower ? `${ower.name} (${ower.email})` : undefined}
+                />
+              </div>
+            );
+          })}
+        </div>
       )}
-    </div>
+    </ScrollablePageLayout>
   );
 }

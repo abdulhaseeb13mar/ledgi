@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { PageHeader } from "@/components/PageHeader";
 import { UserSearchInput } from "@/components/UserSearchInput";
 import { useCreateDuesMutation } from "@/hooks/api";
+import { ScrollablePageLayout } from "@/layouts/ScrollablePageLayout";
 import { useAuthContext } from "@/providers/auth.provider";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/types/currency.types";
 import type { AppUser } from "@/types/user.types";
@@ -81,10 +81,18 @@ export default function CreateDuePage() {
     }
   };
 
-  return (
-    <div>
-      <PageHeader title="Create Due" showBack />
+  const renderSubmitSection = () => (
+    <button
+      onClick={handleSubmit}
+      disabled={createDues.isPending}
+      className="w-full rounded-xl bg-[#01017e] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#01017e]/90 disabled:opacity-50"
+    >
+      {createDues.isPending ? "Creating..." : "Create Due"}
+    </button>
+  );
 
+  return (
+    <ScrollablePageLayout headerProps={{ title: "Create Due", showBack: true }} submitSection={renderSubmitSection()}>
       <div className="space-y-5">
         {/* Description */}
         <div>
@@ -173,16 +181,7 @@ export default function CreateDuePage() {
             </div>
           </div>
         )}
-
-        {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          disabled={createDues.isPending}
-          className="w-full rounded-xl bg-[#01017e] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#01017e]/90 disabled:opacity-50"
-        >
-          {createDues.isPending ? "Creating..." : "Create Due"}
-        </button>
       </div>
-    </div>
+    </ScrollablePageLayout>
   );
 }

@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
 import { DueItem } from "@/components/DueItem";
-import { PageHeader } from "@/components/PageHeader";
 import { useDuesPendingOthersConfirmationQuery, useUsersByIdsQuery } from "@/hooks/api";
+import { ScrollablePageLayout } from "@/layouts/ScrollablePageLayout";
 import { useAuthContext } from "@/providers/auth.provider";
 
 export default function PendingDuesPage() {
@@ -30,9 +30,13 @@ export default function PendingDuesPage() {
   }
 
   return (
-    <div>
-      <PageHeader title="Pending Confirmations" showBack refreshFunction={refreshData} />
-
+    <ScrollablePageLayout
+      headerProps={{
+        title: "Pending Confirmations",
+        showBack: true,
+        refreshFunction: refreshData,
+      }}
+    >
       {dues.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">No dues pending confirmation</p>
       ) : (
@@ -43,6 +47,6 @@ export default function PendingDuesPage() {
           })}
         </div>
       )}
-    </div>
+    </ScrollablePageLayout>
   );
 }

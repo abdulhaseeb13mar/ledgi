@@ -1,7 +1,7 @@
 import { DueItem } from "@/components/DueItem";
-import { PageHeader } from "@/components/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDuesUserOwesToMeQuery, useUserQuery } from "@/hooks/api";
+import { ScrollablePageLayout } from "@/layouts/ScrollablePageLayout";
 import { useAuthContext } from "@/providers/auth.provider";
 import { useParams } from "@tanstack/react-router";
 
@@ -32,9 +32,13 @@ export default function DuesReceivableDetailPage() {
   const resolveRequestedDues = dues.filter((d) => d.status === "resolve_requested");
 
   return (
-    <div>
-      <PageHeader title={`${targetUser?.name ?? "..."}'s Dues`} showBack refreshFunction={refreshData} />
-
+    <ScrollablePageLayout
+      headerProps={{
+        title: `${targetUser?.name ?? "..."}'s Dues`,
+        showBack: true,
+        refreshFunction: refreshData,
+      }}
+    >
       {dues.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">No dues found</p>
       ) : (
@@ -73,6 +77,6 @@ export default function DuesReceivableDetailPage() {
           </TabsContent>
         </Tabs>
       )}
-    </div>
+    </ScrollablePageLayout>
   );
 }
