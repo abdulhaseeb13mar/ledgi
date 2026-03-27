@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { PageHeader } from "@/components/PageHeader";
-import { useDuesIOweQuery, useDuesOwedToMeQuery, useDuesPendingMyConfirmationQuery } from "@/hooks/api";
+import { useDuesIOweQuery, useDuesOwedToMeQuery, useDuesPendingMyConfirmationQuery, useDuesPendingOthersConfirmationQuery } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import { formatAmount } from "@/utils/format-currency";
@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const { data: duesIOwe = [], isFetching: isLoadingDuesIOwe } = useDuesIOweQuery(user?.uid);
   const { data: duesOwedToMe = [], isFetching: isLoadingDuesOwedToMe } = useDuesOwedToMeQuery(user?.uid);
   const { data: pendingConfirmations = [], isFetching: isLoadingPendingConfirmations } = useDuesPendingMyConfirmationQuery(user?.uid);
+  const { data: pendingOthersConfirmations = [], isFetching: isLoadingPendingOthersConfirmations } = useDuesPendingOthersConfirmationQuery(user?.uid);
 
   const iOweTotals = useMemo(() => groupByCurrency(duesIOwe), [duesIOwe]);
   const owedToMeTotals = useMemo(() => groupByCurrency(duesOwedToMe), [duesOwedToMe]);
@@ -130,13 +131,18 @@ export default function DashboardPage() {
 
         <Link
           to="/dues/pending"
-          className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-[#0159f8] transition-colors hover:bg-gray-50"
+          className="relative flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-[#0159f8] transition-colors hover:bg-gray-50"
         >
-          <Clock size={22} />
+          {isLoadingPendingOthersConfirmations ? <Loader2 size={22} className="animate-spin" /> : <Clock size={22} />}
           <div>
             <p className="font-semibold">Pending Confirmations</p>
             <p className="text-xs text-gray-500">Dues waiting for others to confirm</p>
           </div>
+          {pendingOthersConfirmations.length > 0 && (
+            <div className="absolute -right-1 -top-1 flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-secondary px-1.5 text-xs font-bold text-white shadow-sm ring-2 ring-white">
+              {pendingOthersConfirmations.length > 99 ? "99+" : pendingOthersConfirmations.length}
+            </div>
+          )}
         </Link>
       </div>
     </div>
