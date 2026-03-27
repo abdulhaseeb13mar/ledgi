@@ -1,5 +1,6 @@
 import { DueItem } from "@/components/DueItem";
 import { PageHeader } from "@/components/PageHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDuesUserOwesToMeQuery, useUserQuery } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
 import { useParams } from "@tanstack/react-router";
@@ -37,29 +38,40 @@ export default function DuesReceivableDetailPage() {
       {dues.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500">No dues found</p>
       ) : (
-        <>
-          {activeDues.length > 0 && (
-            <div className="mb-4">
-              <h2 className="mb-2 text-sm font-semibold text-gray-500">Active Dues</h2>
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="w-full grid-cols-2">
+            <TabsTrigger value="active" className="flex-1">
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="flex-1">
+              Requested
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active">
+            {activeDues.length === 0 ? (
+              <p className="py-12 text-center text-sm text-gray-500">No active dues found</p>
+            ) : (
               <div className="space-y-2">
                 {activeDues.map((due) => (
                   <DueItem key={due.id} due={due} />
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </TabsContent>
 
-          {resolveRequestedDues.length > 0 && (
-            <div className="mb-4">
-              <h2 className="mb-2 text-sm font-semibold text-gray-500">Resolve Requested</h2>
+          <TabsContent value="pending">
+            {resolveRequestedDues.length === 0 ? (
+              <p className="py-12 text-center text-sm text-gray-500">No requested dues found</p>
+            ) : (
               <div className="space-y-2">
                 {resolveRequestedDues.map((due) => (
                   <DueItem key={due.id} due={due} />
                 ))}
               </div>
-            </div>
-          )}
-        </>
+            )}
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
