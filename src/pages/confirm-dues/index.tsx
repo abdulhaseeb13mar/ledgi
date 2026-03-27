@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 import { DueItem } from "@/components/DueItem";
 import { PageHeader } from "@/components/PageHeader";
-import { useConfirmResolveMutation, useDuesPendingMyConfirmationQuery, useUsersByIdsQuery } from "@/hooks/api";
+import { useConfirmResolveMutation, useDuesPendingMyConfirmationQuery, useRejectResolveMutation, useUsersByIdsQuery } from "@/hooks/api";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/providers/auth.provider";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ export default function ConfirmDuesPage() {
   const { user } = useAuthContext();
   const { data: dues = [], isLoading } = useDuesPendingMyConfirmationQuery(user?.uid);
   const confirmResolve = useConfirmResolveMutation();
+  const rejectResolve = useRejectResolveMutation();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const owerIds = useMemo(() => [...new Set(dues.map((d) => d.owerId))], [dues]);
@@ -36,6 +37,20 @@ export default function ConfirmDuesPage() {
       toast.success("Dues confirmed as resolved!");
     } catch {
       toast.error("Failed to confirm");
+    }
+  };
+
+  const handleReject = async () => {
+    if (selectedIds.size === 0) {
+      toast.error("Select at least one due");
+      return;
+    }
+    try {
+      await rejectResolve.mutateAsync(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      toast.success("Resolve requests rejected");
+    } catch {
+      toast.error("Failed to reject requests");
     }
   };
 
@@ -72,13 +87,22 @@ export default function ConfirmDuesPage() {
             })}
           </div>
 
-          <button
-            onClick={handleConfirm}
-            disabled={selectedIds.size === 0 || confirmResolve.isPending}
-            className="mt-4 w-full rounded-xl bg-green-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-          >
-            {confirmResolve.isPending ? "Confirming..." : `Confirm ${selectedIds.size} Selected`}
-          </button>
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-2">
+            <button
+              onClick={handleReject}
+              disabled={selectedIds.size === 0 || confirmResolve.isPending || rejectResolve.isPending}
+              className="w-full rounded-xl bg-red-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+            >
+              {rejectResolve.isPending ? "Rejecting..." : `Reject ${selectedIds.size} Selected`}
+            </button>
+            <button
+              onClick={handleConfirm}
+              disabled={selectedIds.size === 0 || confirmResolve.isPending || rejectResolve.isPending}
+              className="w-full rounded-xl bg-green-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+            >
+              {confirmResolve.isPending ? "Confirming..." : `Confirm ${selectedIds.size} Selected`}
+            </button>
+          </div>
         </>
       )}
     </div>

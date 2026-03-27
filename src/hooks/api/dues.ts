@@ -8,6 +8,7 @@ import {
   getDuesPendingMyConfirmation,
   getDuesPendingOthersConfirmation,
   getDuesUserOwesToMe,
+  rejectResolve,
   requestResolve,
 } from "@/services/firestore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -85,6 +86,16 @@ export function useConfirmResolveMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dueIds: string[]) => confirmResolve(dueIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: duesKeys.all });
+    },
+  });
+}
+
+export function useRejectResolveMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dueIds: string[]) => rejectResolve(dueIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: duesKeys.all });
     },

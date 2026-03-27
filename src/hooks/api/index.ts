@@ -8,6 +8,7 @@ export {
   useCreateDuesMutation,
   useRequestResolveMutation,
   useConfirmResolveMutation,
+  useRejectResolveMutation,
 } from "./dues";
 
 export { useSearchUsersQuery, useUserQuery, useUsersByIdsQuery, useUpdateUserCurrencyMutation } from "./users";

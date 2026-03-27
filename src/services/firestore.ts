@@ -152,6 +152,17 @@ export async function confirmResolve(dueIds: string[]): Promise<void> {
   await batch.commit();
 }
 
+export async function rejectResolve(dueIds: string[]): Promise<void> {
+  const batch = writeBatch(db);
+  for (const id of dueIds) {
+    batch.update(doc(db, "dues", id), {
+      status: "active",
+      resolveRequestedAt: null,
+    });
+  }
+  await batch.commit();
+}
+
 export async function getDuesPendingMyConfirmation(userId: string): Promise<Due[]> {
   const q = query(collection(db, "dues"), where("creatorId", "==", userId), where("status", "==", "resolve_requested"));
   const snap = await getDocs(q);
