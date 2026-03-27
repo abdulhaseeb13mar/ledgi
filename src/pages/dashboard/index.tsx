@@ -4,18 +4,9 @@ import { PageHeader } from "@/components/PageHeader";
 import { useDuesIOweQuery, useDuesOwedToMeQuery, useDuesPendingMyConfirmationQuery, useDuesPendingOthersConfirmationQuery } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
-import { formatAmount } from "@/utils/format-currency";
+import { formatAmount, groupByCurrency } from "@/utils/format-currency";
 import { Link } from "@tanstack/react-router";
 import { ArrowDownLeft, ArrowUpRight, CheckCircle, Clock, Loader2, PlusCircle, Users } from "lucide-react";
-
-function groupByCurrency(dues: { amount: number; currency?: string }[]): { currency: string; total: number }[] {
-  const map = new Map<string, number>();
-  for (const due of dues) {
-    const c = due.currency ?? DEFAULT_CURRENCY;
-    map.set(c, (map.get(c) ?? 0) + due.amount);
-  }
-  return Array.from(map.entries()).map(([currency, total]) => ({ currency, total }));
-}
 
 export default function DashboardPage() {
   const { user } = useAuthContext();
