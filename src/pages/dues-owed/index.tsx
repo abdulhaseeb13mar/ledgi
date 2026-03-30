@@ -49,6 +49,7 @@ export default function DuesOwedPage() {
         title: "Dues I Owe",
         showBack: true,
         refreshFunction: refreshData,
+        titleClassName: "text-red-500",
       }}
     >
       {creatorIds.length === 0 ? (

@@ -8,9 +8,10 @@ interface PageHeaderProps {
   title: string;
   showBack?: boolean;
   refreshFunction?: () => Promise<boolean>;
+  titleClassName?: string;
 }
 
-export function PageHeader({ title, showBack = false, refreshFunction }: PageHeaderProps) {
+export function PageHeader({ title, showBack = false, refreshFunction, titleClassName }: PageHeaderProps) {
   const [refreshing, setRefreshing] = useState(false);
   const triggerRefresh = async () => {
     if (refreshFunction) {
@@ -30,7 +31,7 @@ export function PageHeader({ title, showBack = false, refreshFunction }: PageHea
             <ArrowLeft size={22} />
           </button>
         )}
-        <h1 className="truncate text-xl font-bold text-[#01017e]">{title}</h1>
+        <h1 className={cn("truncate text-xl font-bold text-primary", titleClassName)}>{title}</h1>
       </div>
       {refreshFunction && (
         <button

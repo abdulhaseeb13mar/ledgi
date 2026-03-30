@@ -77,6 +77,7 @@ export default function DuesOwedDetailPage() {
         title: `Dues to ${targetUser?.name ?? "..."}`,
         showBack: true,
         refreshFunction: refreshData,
+        titleClassName: "text-red-500",
       }}
       submitSection={renderSubmitSection()}
     >
