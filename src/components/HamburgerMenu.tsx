@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import kamelHisaabLogo from "@/assets/svgs/kamel-hisaab-secondary.svg";
+import { AppLogoUrlSecondary } from "@/constants/misc";
 import { useAuthContext } from "@/providers/auth.provider";
 import { signOut } from "@/utils/auth";
 import { cn } from "@/utils/cn";
@@ -47,7 +47,7 @@ export function HamburgerMenu() {
         <button onClick={() => setOpen(true)} className="text-white" aria-label="Open menu">
           <Menu size={24} />
         </button>
-        <img src={kamelHisaabLogo} alt="Kamel Hisaab" className="h-8 w-auto" />
+        <img src={AppLogoUrlSecondary} alt="Kamel Hisaab" className="h-8 w-auto" />
         <div className="w-6" />
       </header>
 

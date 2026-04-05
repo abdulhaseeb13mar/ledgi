@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import kamelHisaabLogo from "@/assets/svgs/kamel-hisaab-primary.svg";
+import { AppLogoUrlPrimary } from "@/constants/misc";
 import { auth } from "@/lib/firebase";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { FirebaseError } from "firebase/app";
@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="rounded-2xl bg-white p-8 shadow-xl">
       <div className="mb-8 text-center">
-        <img src={kamelHisaabLogo} alt="Kamel Hisaab" className="mx-auto h-12 w-auto" />
+        <img src={AppLogoUrlPrimary} alt="Kamel Hisaab" className="mx-auto h-12 w-auto" />
         <p className="mt-2 text-sm text-gray-500">Enter your email and we&apos;ll send you a password reset link.</p>
       </div>
 
