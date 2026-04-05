@@ -58,7 +58,7 @@ export default function DuesReceivableDetailPage() {
             ) : (
               <div className="space-y-2">
                 {activeDues.map((due) => (
-                  <DueItem key={due.id} due={due} />
+                  <DueItem key={due.id} due={due} variant="receivable" />
                 ))}
               </div>
             )}
@@ -70,7 +70,7 @@ export default function DuesReceivableDetailPage() {
             ) : (
               <div className="space-y-2">
                 {resolveRequestedDues.map((due) => (
-                  <DueItem key={due.id} due={due} />
+                  <DueItem key={due.id} due={due} variant="receivable" />
                 ))}
               </div>
             )}

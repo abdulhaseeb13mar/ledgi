@@ -104,7 +104,7 @@ export default function DuesOwedDetailPage() {
                     key={due.id}
                     className={cn("rounded-xl border-2 transition-colors", selectedIds.has(due.id) ? "border-[#5f59f7]" : "border-transparent")}
                   >
-                    <DueItem due={due} selectable selected={selectedIds.has(due.id)} onToggle={toggleSelection} />
+                    <DueItem due={due} selectable selected={selectedIds.has(due.id)} onToggle={toggleSelection} variant="owed" />
                   </div>
                 ))}
               </div>
@@ -117,7 +117,7 @@ export default function DuesOwedDetailPage() {
             ) : (
               <div className="space-y-2">
                 {resolveRequestedDues.map((due) => (
-                  <DueItem key={due.id} due={due} />
+                  <DueItem key={due.id} due={due} variant="owed" />
                 ))}
               </div>
             )}

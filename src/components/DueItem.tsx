@@ -10,9 +10,10 @@ interface DueItemProps {
   selected?: boolean;
   onToggle?: (id: string) => void;
   showUser?: string;
+  variant?: "owed" | "receivable";
 }
 
-export function DueItem({ due, selectable = false, selected = false, onToggle, showUser }: DueItemProps) {
+export function DueItem({ due, selectable = false, selected = false, onToggle, showUser, variant = "owed" }: DueItemProps) {
   return (
     <div
       className={cn("flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm", selectable && "cursor-pointer hover:bg-gray-50")}
@@ -27,7 +28,7 @@ export function DueItem({ due, selectable = false, selected = false, onToggle, s
           <span className="mt-1 inline-block rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">Resolve Requested</span>
         )}
       </div>
-      <span className="text-base font-bold text-gray-900">{formatAmount(due.amount, due.currency)}</span>
+      <span className={cn("text-base font-bold", variant === "owed" ? "text-red-500" : "text-green-500")}>{formatAmount(due.amount, due.currency)}</span>
     </div>
   );
 }
