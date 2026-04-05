@@ -2,9 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/kamel-hisaab-app-logo.svg" />
+    <!-- <link rel="icon" type="image/svg+xml" href="/kamel-hisaab-app-logo.svg" /> -->
+    <link rel="icon" type="image/svg+xml" href="/khaata-logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kamel Hisaab</title>
+    <!-- <title>Kamel Hisaab</title> -->
+    <title>Ledgi</title>
     <style>
       #boot-loader {
         position: fixed;
@@ -44,11 +46,16 @@
           transform: rotate(360deg);
         }
       }
+
+      .loader-image-khaata {
+        width: 6rem;
+      }
     </style>
   </head>
   <body>
     <div id="boot-loader" aria-live="polite" aria-label="Loading application">
-      <img src="/kamel-hisaab-primary.svg" alt="Kamel Hisaab Logo" class="boot-logo" />
+      <img id="loader-img-id" src="/khaata-logo.svg" alt="loader img Logo" class="boot-logo loader-image-khaata" />
+      <!-- <img id="loader-img-id" src="/kamel-hisaab-primary.svg" alt="loader img Logo" class="boot-logo" /> -->
       <div class="boot-spinner" aria-hidden="true"></div>
     </div>
     <div id="root"></div>

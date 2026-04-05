@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev:ledgi": "vite --mode ledgi",
+    "dev:kamelhisaab": "vite --mode kamelhisaab",
+    "build:kamelhisaab": "node scripts/set-app-config.mjs kamel-hisaab && tsc -b && vite build --mode kamelhisaab",
+    "build:ledgi": "node scripts/set-app-config.mjs ledgi && tsc -b && vite build --mode ledgi",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy-kamelhisaab": "pnpm run build && firebase use kamelhisaab && firebase deploy"
+    "deploy-kamelhisaab": "pnpm run build:kamelhisaab && firebase use kamelhisaab && firebase deploy",
+    "deploy-ledgi": "pnpm run build:ledgi && firebase deploy"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
