@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-labelledby="title desc">
+  <title id="title">Ledgi monochrome icon</title>
+  <desc id="desc">A monochrome version of the Ledgi logo for Android themed icons.</desc>
+  <polygon
+    points="40,40 420,40 230,400 420,760 40,760"
+    fill="#FFFFFF"
+  />
+  <polygon
+    points="466,40 520,40 324,400 520,760 466,760 270,400"
+    fill="#FFFFFF"
+  />
+  <polygon
+    points="570,40 624,40 428,400 624,760 570,760 374,400"
+    fill="#FFFFFF"
+  />
+  <polygon
+    points="674,40 728,40 532,400 728,760 674,760 478,400"
+    fill="#FFFFFF"
+  />
+</svg>

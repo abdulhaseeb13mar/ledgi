@@ -1,27 +1,28 @@
+import { APP_NAME } from "@/constants/misc";
 import {
-  colors,
-  fontSize,
-  fontWeight,
-  radius,
-  spacing,
+    colors,
+    fontSize,
+    fontWeight,
+    radius,
+    spacing,
 } from "@/constants/theme";
+import type { RootStackParamList } from "@/navigation/types";
 import { useAuthContext } from "@/providers/auth.provider";
 import { signOut } from "@/utils/auth";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    Modal,
+    Pressable,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { RootStackParamList } from "@/navigation/types";
 
 const DRAWER_WIDTH = 280;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -128,7 +129,7 @@ export default function HamburgerMenu({
           <Ionicons name="menu" size={24} color={colors.white} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Ledgi</Text>
+        <Text style={styles.headerTitle}>{APP_NAME}</Text>
 
         {/* Spacer to balance the menu button */}
         <View style={{ width: 40 }} />

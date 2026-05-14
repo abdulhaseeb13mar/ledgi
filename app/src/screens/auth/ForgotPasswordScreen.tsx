@@ -1,27 +1,28 @@
-import { auth } from "@/lib/firebase";
+import { APP_NAME } from "@/constants/misc";
 import {
-  colors,
-  fontSize,
-  fontWeight,
-  radius,
-  spacing,
+    colors,
+    fontSize,
+    fontWeight,
+    radius,
+    spacing,
 } from "@/constants/theme";
+import { auth } from "@/lib/firebase";
 import type { RootStackParamList } from "@/navigation/types";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
 import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -79,11 +80,11 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
           {/* Header */}
           <View style={styles.logoSection}>
             <Image
-              source={require("../../../assets/images/khaata-logo.png")}
+              source={require("../../../assets/images/icon.png")}
               style={styles.logoImage}
               resizeMode="contain"
             />
-            <Text style={styles.appName}>Reset Password</Text>
+            <Text style={styles.appName}>{APP_NAME}</Text>
             <Text style={styles.tagline}>
               Enter your email to receive a reset link
             </Text>
