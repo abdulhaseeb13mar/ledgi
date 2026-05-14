@@ -12,6 +12,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -77,9 +78,11 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
 
           {/* Header */}
           <View style={styles.logoSection}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>L</Text>
-            </View>
+            <Image
+              source={require("../../../assets/images/khaata-logo.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
             <Text style={styles.appName}>Reset Password</Text>
             <Text style={styles.tagline}>
               Enter your email to receive a reset link
@@ -155,19 +158,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: spacing["2xl"],
   },
-  logoCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    justifyContent: "center",
-    alignItems: "center",
+  logoImage: {
+    width: 72,
+    height: 72,
     marginBottom: spacing.md,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: fontWeight.bold,
-    color: colors.white,
   },
   appName: {
     fontSize: fontSize["2xl"],

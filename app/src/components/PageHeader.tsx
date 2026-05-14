@@ -20,7 +20,7 @@ import Toast from "react-native-toast-message";
 interface PageHeaderProps {
   title: string;
   showBack?: boolean;
-  refreshFunction?: () => Promise<boolean>;
+  refreshFunction?: () => Promise<unknown>;
   titleStyle?: object;
 }
 
@@ -36,8 +36,8 @@ export default function PageHeader({
   const triggerRefresh = async () => {
     if (!refreshFunction) return;
     setRefreshing(true);
-    const success = await refreshFunction();
-    if (!success) {
+    const result = await refreshFunction();
+    if (result === false) {
       Toast.show({ type: "error", text1: "Failed to refresh data" });
     }
     setRefreshing(false);

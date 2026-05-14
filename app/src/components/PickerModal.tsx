@@ -22,19 +22,27 @@ interface PickerModalProps {
   value: string;
   onChange: (value: string) => void;
   label?: string;
+  options?: Array<{ label: string; value: string }>;
 }
 
 export default function PickerModal({
   value,
   onChange,
   label,
+  options,
 }: PickerModalProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const [tempValue, setTempValue] = useState(value);
+  const pickerOptions =
+    options ??
+    CURRENCIES.map((currency) => ({
+      label: `${currency.code} — ${currency.name} (${currency.symbol})`,
+      value: currency.code,
+    }));
 
-  const selectedCurrency = CURRENCIES.find((c) => c.code === value);
-  const displayLabel = selectedCurrency
-    ? `${selectedCurrency.code} — ${selectedCurrency.name} (${selectedCurrency.symbol})`
+  const selectedOption = pickerOptions.find((option) => option.value === value);
+  const displayLabel = selectedOption
+    ? selectedOption.label
     : value;
 
   const handleDone = () => {
@@ -59,11 +67,11 @@ export default function PickerModal({
             style={styles.androidPicker}
             dropdownIconColor={colors.gray[500]}
           >
-            {CURRENCIES.map((c) => (
+            {pickerOptions.map((option) => (
               <Picker.Item
-                key={c.code}
-                label={`${c.code} — ${c.name} (${c.symbol})`}
-                value={c.code}
+                key={option.value}
+                label={option.label}
+                value={option.value}
               />
             ))}
           </Picker>
@@ -108,11 +116,11 @@ export default function PickerModal({
             onValueChange={(v) => setTempValue(String(v))}
             style={styles.iosPicker}
           >
-            {CURRENCIES.map((c) => (
+            {pickerOptions.map((option) => (
               <Picker.Item
-                key={c.code}
-                label={`${c.code} — ${c.name} (${c.symbol})`}
-                value={c.code}
+                key={option.value}
+                label={option.label}
+                value={option.value}
               />
             ))}
           </Picker>

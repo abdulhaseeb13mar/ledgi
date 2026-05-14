@@ -200,9 +200,7 @@ export default function UserSearchInput({
                       activeOpacity={0.7}
                     >
                       {!isFriend && (
-                        <Text style={styles.sectionLabel}>
-                          {type === "friend" ? "FRIEND" : "OTHER USER"}
-                        </Text>
+                        <Text style={styles.sectionLabel}>OTHER USER</Text>
                       )}
                       <Text style={styles.resultName}>{u.name}</Text>
                       <Text style={styles.resultEmail}>{u.email}</Text>

@@ -1,6 +1,8 @@
+import "react-native-gesture-handler";
+
 import RootNavigator from "@/navigation";
 import { AuthProvider } from "@/providers/auth.provider";
-import { QueryProvider } from "@/providers/query.provider";
+import QueryProvider from "@/providers/query.provider";
 import React from "react";
 import Toast from "react-native-toast-message";
 

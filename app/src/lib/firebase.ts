@@ -1,6 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getReactNativePersistence, initializeAuth } from "firebase/auth";
+import {
+  getAuth,
+  getReactNativePersistence,
+  initializeAuth,
+} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -14,9 +18,21 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// Use AsyncStorage for auth persistence so users stay logged in across app restarts
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+function createAuth() {
+  try {
+    return initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  } catch (e: unknown) {
+    // Fast Refresh can cause initializeAuth to be called twice for the same app
+    // instance. Only fall back to getAuth for that specific case.
+    if (e instanceof Error && e.message.includes('already been initialized')) {
+      return getAuth(app);
+    }
+    throw e;
+  }
+}
+
+export const auth = createAuth();
 
 export const db = getFirestore(app);

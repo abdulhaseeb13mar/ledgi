@@ -1,9 +1,7 @@
-// Mock AsyncStorage
 jest.mock("@react-native-async-storage/async-storage", () =>
   require("@react-native-async-storage/async-storage/jest/async-storage-mock"),
 );
 
-// Mock react-native-toast-message
 jest.mock("react-native-toast-message", () => ({
   __esModule: true,
   default: {
@@ -12,12 +10,10 @@ jest.mock("react-native-toast-message", () => ({
   },
 }));
 
-// Mock @expo/vector-icons
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: "Ionicons",
 }));
 
-// Mock Firebase modules
 jest.mock("firebase/app", () => ({
   initializeApp: jest.fn(() => ({})),
   getApps: jest.fn(() => []),

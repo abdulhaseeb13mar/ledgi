@@ -16,6 +16,7 @@ const baseDue: Due = {
     nanoseconds: 0,
     toDate: () => new Date(1700000000000),
   } as any,
+  resolveRequestedAt: null,
 };
 
 describe("DueItem", () => {
