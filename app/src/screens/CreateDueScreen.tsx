@@ -47,7 +47,7 @@ export default function CreateDueScreen({ navigation }: Props) {
   );
   const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
   const [userAmounts, setUserAmounts] = useState<Record<string, string>>({});
-  const [splitMode, setSplitMode] = useState<"split" | "applyAll" | null>(null);
+  const [splitMode, setSplitMode] = useState<"split" | "applyAll" | null>("split");
 
   const applyMode = (users: AppUser[], totalAmt: string, mode: "split" | "applyAll") => {
     const updated: Record<string, string> = {};
@@ -233,7 +233,6 @@ export default function CreateDueScreen({ navigation }: Props) {
             <UserSearchInput
               selectedUsers={selectedUsers}
               onSelect={handleSelect}
-              onRemove={handleRemove}
             />
           </View>
 
@@ -354,8 +353,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.gray[100],
+    borderWidth: 2,
+    borderColor: colors.accent,
     borderRadius: radius.md,
     backgroundColor: colors.white,
     padding: spacing.md,

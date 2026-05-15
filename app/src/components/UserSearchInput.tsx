@@ -31,7 +31,6 @@ import Toast from "react-native-toast-message";
 interface UserSearchInputProps {
   selectedUsers: AppUser[];
   onSelect: (user: AppUser) => void;
-  onRemove: (uid: string) => void;
 }
 
 interface SearchResult {
@@ -43,7 +42,6 @@ interface SearchResult {
 export default function UserSearchInput({
   selectedUsers,
   onSelect,
-  onRemove,
 }: UserSearchInputProps) {
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,7 +50,7 @@ export default function UserSearchInput({
 
   const isValidEmailQuery = EMAIL_REGEX.test(searchQuery);
 
-  const { data: friends = [] } = useFriendsQuery(user?.uid);
+  const { data: friends = [], isLoading: isFriendsLoading } = useFriendsQuery(user?.uid);
   const { data: globalResults = [], isLoading: isSearchLoading } =
     useSearchUsersQuery(isValidEmailQuery ? searchQuery : "", user?.uid);
   const { data: emailSearchResult, isLoading: isEmailSearchLoading } =
@@ -231,40 +229,42 @@ export default function UserSearchInput({
             />
           )}
         </View>
-      ) : friends.length > 0 ? (
+      ) : isFriendsLoading || friends.some((f) => !selectedUsers.find((s) => s.uid === f.uid)) ? (
         /* Friends List when no search query */
         <View style={styles.friendsSection}>
           <Text style={styles.friendsSectionLabel}>YOUR FRIENDS</Text>
-          {friends.map((u) => {
-            const isSelected = !!selectedUsers.find((s) => s.uid === u.uid);
-            return (
-              <TouchableOpacity
-                key={u.uid}
-                style={[styles.friendItem, isSelected && styles.friendItemSelected]}
-                onPress={() => (isSelected ? onRemove(u.uid) : handleSelectUser(u))}
-                activeOpacity={0.7}
-              >
-                <View style={styles.friendAvatar}>
-                  <Text style={styles.friendAvatarText}>
-                    {u.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-                <View style={styles.friendInfo}>
-                  <Text style={styles.resultName} numberOfLines={1}>
-                    {u.name}
-                  </Text>
-                  <Text style={styles.resultEmail} numberOfLines={1}>
-                    {u.email}
-                  </Text>
-                </View>
-                <Ionicons
-                  name={isSelected ? "checkmark-circle" : "add"}
-                  size={18}
-                  color={isSelected ? colors.accent : colors.gray[400]}
-                />
-              </TouchableOpacity>
-            );
-          })}
+          {isFriendsLoading ? (
+            <View style={styles.friendsLoader}>
+              <ActivityIndicator size="small" color={colors.accent} />
+              <Text style={styles.friendsLoaderText}>Loading friends...</Text>
+            </View>
+          ) : (
+            friends
+              .filter((f) => !selectedUsers.find((s) => s.uid === f.uid))
+              .map((u) => (
+                <TouchableOpacity
+                  key={u.uid}
+                  style={styles.friendItem}
+                  onPress={() => handleSelectUser(u)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.friendAvatar}>
+                    <Text style={styles.friendAvatarText}>
+                      {u.name.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.friendInfo}>
+                    <Text style={styles.resultName} numberOfLines={1}>
+                      {u.name}
+                    </Text>
+                    <Text style={styles.resultEmail} numberOfLines={1}>
+                      {u.email}
+                    </Text>
+                  </View>
+                  <Ionicons name="add" size={18} color={colors.gray[400]} />
+                </TouchableOpacity>
+              ))
+          )}
         </View>
       ) : null}
     </View>
@@ -351,6 +351,17 @@ const styles = StyleSheet.create({
   friendsSection: {
     gap: spacing.sm,
   },
+  friendsLoader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.lg,
+    gap: spacing.sm,
+  },
+  friendsLoaderText: {
+    fontSize: fontSize.sm,
+    color: colors.gray[500],
+  },
   friendsSectionLabel: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.semibold,
@@ -371,9 +382,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 1,
     elevation: 1,
-  },
-  friendItemSelected: {
-    borderColor: colors.accent,
   },
   friendAvatar: {
     width: 40,

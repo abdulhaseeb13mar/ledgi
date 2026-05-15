@@ -5,13 +5,12 @@ import { useAddFriendMutation, useFriendsQuery, useSearchUserByEmailQuery, useSe
 import { useAuthContext } from "@/providers/auth.provider";
 import type { AppUser } from "@/types/user.types";
 import debounce from "lodash.debounce";
-import { Check, Plus, UserCheck } from "lucide-react";
+import { Plus, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserSearchInputProps {
   selectedUsers: AppUser[];
   onSelect: (user: AppUser) => void;
-  onRemove: (uid: string) => void;
 }
 
 interface SearchResult {
@@ -20,7 +19,7 @@ interface SearchResult {
   isFriend?: boolean;
 }
 
-export function UserSearchInput({ selectedUsers, onSelect, onRemove }: UserSearchInputProps) {
+export function UserSearchInput({ selectedUsers, onSelect }: UserSearchInputProps) {
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [addedFriends, setAddedFriends] = useState<Set<string>>(new Set());
@@ -28,7 +27,7 @@ export function UserSearchInput({ selectedUsers, onSelect, onRemove }: UserSearc
 
   const isValidEmailQuery = EMAIL_REGEX.test(searchQuery);
 
-  const { data: friends = [] } = useFriendsQuery(user?.uid);
+  const { data: friends = [], isLoading: isFriendsLoading } = useFriendsQuery(user?.uid);
   const { data: globalResults = [], isLoading: isSearchLoading } = useSearchUsersQuery(isValidEmailQuery ? searchQuery : "", user?.uid);
   const { data: emailSearchResult, isLoading: isEmailSearchLoading } = useSearchUserByEmailQuery(searchQuery, user?.uid);
   const addFriendMutation = useAddFriendMutation(user?.uid);
@@ -187,37 +186,37 @@ export function UserSearchInput({ selectedUsers, onSelect, onRemove }: UserSearc
       </div>
 
       {/* Friends List - shown when no search query */}
-      {!inputValue && friends.length > 0 && (
+      {!inputValue && (isFriendsLoading || friends.some((f) => !selectedUsers.find((s) => s.uid === f.uid))) && (
         <div className="pt-2">
           <p className="mb-3 text-xs font-semibold uppercase text-gray-500">Your Friends</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {friends.map((u) => {
-              const isSelected = !!selectedUsers.find((s) => s.uid === u.uid);
-              return (
-                <button
-                  key={u.uid}
-                  type="button"
-                  onClick={() => (isSelected ? onRemove(u.uid) : handleSelectUser(u))}
-                  className={`flex items-center gap-3 rounded-xl border-2 bg-white p-3 text-left shadow-sm transition-colors ${isSelected ? "border-[#5f59f7] bg-[#5f59f7]/5" : "border-gray-100 hover:border-[#5f59f7]/30 hover:bg-[#5f59f7]/5"}`}
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#5f59f7]/10 text-sm font-semibold text-[#5f59f7]">
-                    {u.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">{u.name}</p>
-                    <p className="truncate text-xs text-gray-500">{u.email}</p>
-                  </div>
-                  {isSelected ? (
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5f59f7] text-white">
-                      <Check size={12} />
+          {isFriendsLoading ? (
+            <div className="flex items-center justify-center gap-2 py-4 text-sm text-gray-500">
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#5f59f7]" />
+              Loading friends...
+            </div>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {friends
+                .filter((f) => !selectedUsers.find((s) => s.uid === f.uid))
+                .map((u) => (
+                  <button
+                    key={u.uid}
+                    type="button"
+                    onClick={() => handleSelectUser(u)}
+                    className="flex items-center gap-3 rounded-xl border-2 border-gray-100 bg-white p-3 text-left shadow-sm transition-colors hover:border-[#5f59f7]/30 hover:bg-[#5f59f7]/5"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#5f59f7]/10 text-sm font-semibold text-[#5f59f7]">
+                      {u.name.charAt(0).toUpperCase()}
                     </div>
-                  ) : (
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-gray-900">{u.name}</p>
+                      <p className="truncate text-xs text-gray-500">{u.email}</p>
+                    </div>
                     <Plus size={16} className="text-gray-400" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
       )}
     </div>

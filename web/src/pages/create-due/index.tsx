@@ -20,7 +20,7 @@ export default function CreateDuePage() {
   const [currency, setCurrency] = useState<string>(appUser?.preferredCurrency ?? DEFAULT_CURRENCY);
   const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
   const [userAmounts, setUserAmounts] = useState<Record<string, string>>({});
-  const [splitMode, setSplitMode] = useState<"split" | "applyAll" | null>(null);
+  const [splitMode, setSplitMode] = useState<"split" | "applyAll" | null>("split");
 
   const applyMode = (users: AppUser[], totalAmt: string, mode: "split" | "applyAll") => {
     const updated: Record<string, string> = {};
@@ -199,7 +199,7 @@ export default function CreateDuePage() {
         {/* User Search */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-gray-700">Select Users</label>
-          <UserSearchInput selectedUsers={selectedUsers} onSelect={handleSelect} onRemove={handleRemove} />
+          <UserSearchInput selectedUsers={selectedUsers} onSelect={handleSelect} />
         </div>
 
         {/* Selected Users with individual amounts */}
@@ -210,7 +210,7 @@ export default function CreateDuePage() {
             </div>
             <div className="space-y-2">
               {selectedUsers.map((u) => (
-                <div key={u.uid} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div key={u.uid} className="flex items-center gap-3 rounded-xl border-2 border-[#5f59f7] bg-[#5f59f7]/5 p-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-gray-900">{u.name}</p>
                     <p className="truncate text-xs text-gray-500">{u.email}</p>
