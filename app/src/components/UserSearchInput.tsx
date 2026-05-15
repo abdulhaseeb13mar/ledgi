@@ -142,10 +142,6 @@ export default function UserSearchInput({
   );
   const isLoading = isSearchLoading || isEmailSearchLoading;
 
-  const availableFriends = friends.filter(
-    (f) => !selectedUsers.find((s) => s.uid === f.uid),
-  );
-
   return (
     <View style={styles.container}>
       {/* Search Input */}
@@ -235,52 +231,42 @@ export default function UserSearchInput({
             />
           )}
         </View>
-      ) : availableFriends.length > 0 ? (
+      ) : friends.length > 0 ? (
         /* Friends List when no search query */
         <View style={styles.friendsSection}>
           <Text style={styles.friendsSectionLabel}>YOUR FRIENDS</Text>
-          {availableFriends.map((u) => (
-            <TouchableOpacity
-              key={u.uid}
-              style={styles.friendItem}
-              onPress={() => handleSelectUser(u)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.friendAvatar}>
-                <Text style={styles.friendAvatarText}>
-                  {u.name.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-              <View style={styles.friendInfo}>
-                <Text style={styles.resultName} numberOfLines={1}>
-                  {u.name}
-                </Text>
-                <Text style={styles.resultEmail} numberOfLines={1}>
-                  {u.email}
-                </Text>
-              </View>
-              <Ionicons name="add" size={18} color={colors.gray[400]} />
-            </TouchableOpacity>
-          ))}
+          {friends.map((u) => {
+            const isSelected = !!selectedUsers.find((s) => s.uid === u.uid);
+            return (
+              <TouchableOpacity
+                key={u.uid}
+                style={[styles.friendItem, isSelected && styles.friendItemSelected]}
+                onPress={() => (isSelected ? onRemove(u.uid) : handleSelectUser(u))}
+                activeOpacity={0.7}
+              >
+                <View style={styles.friendAvatar}>
+                  <Text style={styles.friendAvatarText}>
+                    {u.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <View style={styles.friendInfo}>
+                  <Text style={styles.resultName} numberOfLines={1}>
+                    {u.name}
+                  </Text>
+                  <Text style={styles.resultEmail} numberOfLines={1}>
+                    {u.email}
+                  </Text>
+                </View>
+                <Ionicons
+                  name={isSelected ? "checkmark-circle" : "add"}
+                  size={18}
+                  color={isSelected ? colors.accent : colors.gray[400]}
+                />
+              </TouchableOpacity>
+            );
+          })}
         </View>
       ) : null}
-
-      {/* Selected Users Pills */}
-      {selectedUsers.length > 0 && (
-        <View style={styles.pillsContainer}>
-          {selectedUsers.map((u) => (
-            <View key={u.uid} style={styles.pill}>
-              <Text style={styles.pillText}>{u.name}</Text>
-              <TouchableOpacity
-                onPress={() => onRemove(u.uid)}
-                hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
-              >
-                <Ionicons name="close" size={14} color={colors.accent} />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      )}
     </View>
   );
 }
@@ -377,7 +363,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     backgroundColor: colors.white,
     borderRadius: radius.xl,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.gray[100],
     padding: spacing.md,
     shadowColor: colors.black,
@@ -385,6 +371,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 1,
     elevation: 1,
+  },
+  friendItemSelected: {
+    borderColor: colors.accent,
   },
   friendAvatar: {
     width: 40,
@@ -402,24 +391,5 @@ const styles = StyleSheet.create({
   friendInfo: {
     flex: 1,
     minWidth: 0,
-  },
-  pillsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  pill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: colors.accentLight,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.full,
-  },
-  pillText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.accent,
   },
 });

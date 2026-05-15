@@ -5,7 +5,7 @@ import { useAddFriendMutation, useFriendsQuery, useSearchUserByEmailQuery, useSe
 import { useAuthContext } from "@/providers/auth.provider";
 import type { AppUser } from "@/types/user.types";
 import debounce from "lodash.debounce";
-import { Plus, UserCheck, X } from "lucide-react";
+import { Check, Plus, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserSearchInputProps {
@@ -187,18 +187,18 @@ export function UserSearchInput({ selectedUsers, onSelect, onRemove }: UserSearc
       </div>
 
       {/* Friends List - shown when no search query */}
-      {!inputValue && friends.filter((f) => !selectedUsers.find((s) => s.uid === f.uid)).length > 0 && (
+      {!inputValue && friends.length > 0 && (
         <div className="pt-2">
           <p className="mb-3 text-xs font-semibold uppercase text-gray-500">Your Friends</p>
           <div className="grid gap-2 sm:grid-cols-2">
-            {friends
-              .filter((f) => !selectedUsers.find((s) => s.uid === f.uid))
-              .map((u) => (
+            {friends.map((u) => {
+              const isSelected = !!selectedUsers.find((s) => s.uid === u.uid);
+              return (
                 <button
                   key={u.uid}
                   type="button"
-                  onClick={() => handleSelectUser(u)}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 text-left shadow-sm transition-colors hover:border-[#5f59f7]/30 hover:bg-[#5f59f7]/5"
+                  onClick={() => (isSelected ? onRemove(u.uid) : handleSelectUser(u))}
+                  className={`flex items-center gap-3 rounded-xl border-2 bg-white p-3 text-left shadow-sm transition-colors ${isSelected ? "border-[#5f59f7] bg-[#5f59f7]/5" : "border-gray-100 hover:border-[#5f59f7]/30 hover:bg-[#5f59f7]/5"}`}
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#5f59f7]/10 text-sm font-semibold text-[#5f59f7]">
                     {u.name.charAt(0).toUpperCase()}
@@ -207,24 +207,17 @@ export function UserSearchInput({ selectedUsers, onSelect, onRemove }: UserSearc
                     <p className="truncate text-sm font-medium text-gray-900">{u.name}</p>
                     <p className="truncate text-xs text-gray-500">{u.email}</p>
                   </div>
-                  <Plus size={16} className="text-gray-400" />
+                  {isSelected ? (
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#5f59f7] text-white">
+                      <Check size={12} />
+                    </div>
+                  ) : (
+                    <Plus size={16} className="text-gray-400" />
+                  )}
                 </button>
-              ))}
+              );
+            })}
           </div>
-        </div>
-      )}
-
-      {/* Selected Users */}
-      {selectedUsers.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {selectedUsers.map((u) => (
-            <span key={u.uid} className="inline-flex items-center gap-1.5 rounded-full bg-[#5f59f7]/10 px-3 py-1.5 text-sm font-medium text-[#5f59f7]">
-              {u.name}
-              <button type="button" onClick={() => onRemove(u.uid)} className="rounded-full p-0.5 hover:bg-[#5f59f7]/20">
-                <X size={14} />
-              </button>
-            </span>
-          ))}
         </div>
       )}
     </div>

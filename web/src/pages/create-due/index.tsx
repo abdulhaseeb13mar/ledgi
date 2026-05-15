@@ -20,31 +20,76 @@ export default function CreateDuePage() {
   const [currency, setCurrency] = useState<string>(appUser?.preferredCurrency ?? DEFAULT_CURRENCY);
   const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
   const [userAmounts, setUserAmounts] = useState<Record<string, string>>({});
+  const [splitMode, setSplitMode] = useState<"split" | "applyAll" | null>(null);
+
+  const applyMode = (users: AppUser[], totalAmt: string, mode: "split" | "applyAll") => {
+    const updated: Record<string, string> = {};
+    if (mode === "split") {
+      const split = (parseFloat(totalAmt) / users.length).toFixed(2);
+      for (const u of users) updated[u.uid] = split;
+    } else {
+      for (const u of users) updated[u.uid] = totalAmt;
+    }
+    setUserAmounts(updated);
+  };
+
+  const handleAmountChange = (val: string) => {
+    setAmount(val);
+    if (!val) {
+      setUserAmounts({});
+      return;
+    }
+    if (splitMode && parseFloat(val) > 0 && selectedUsers.length > 0) {
+      applyMode(selectedUsers, val, splitMode);
+    }
+  };
 
   const handleSelect = (u: AppUser) => {
-    setSelectedUsers((prev) => [...prev, u]);
-    setUserAmounts((prev) => ({ ...prev, [u.uid]: amount }));
+    const newUsers = [...selectedUsers, u];
+    setSelectedUsers(newUsers);
+    if (splitMode && amount && parseFloat(amount) > 0) {
+      applyMode(newUsers, amount, splitMode);
+    } else {
+      setUserAmounts((prev) => ({ ...prev, [u.uid]: amount }));
+    }
   };
 
   const handleRemove = (uid: string) => {
-    setSelectedUsers((prev) => prev.filter((u) => u.uid !== uid));
-    setUserAmounts((prev) => {
-      const next = { ...prev };
-      delete next[uid];
-      return next;
-    });
+    const newUsers = selectedUsers.filter((u) => u.uid !== uid);
+    setSelectedUsers(newUsers);
+    if (splitMode && amount && parseFloat(amount) > 0 && newUsers.length > 0) {
+      applyMode(newUsers, amount, splitMode);
+    } else {
+      setUserAmounts((prev) => {
+        const next = { ...prev };
+        delete next[uid];
+        return next;
+      });
+    }
   };
 
   const handleApplyToAll = () => {
-    if (!amount) {
-      toast.error("Enter an amount first");
+    if (!amount || parseFloat(amount) <= 0) {
+      toast.error("Enter a total amount first");
       return;
     }
-    const updated: Record<string, string> = {};
-    for (const u of selectedUsers) {
-      updated[u.uid] = amount;
+    const newMode = splitMode === "applyAll" ? null : "applyAll";
+    setSplitMode(newMode);
+    if (newMode === "applyAll" && selectedUsers.length > 0) {
+      applyMode(selectedUsers, amount, "applyAll");
     }
-    setUserAmounts(updated);
+  };
+
+  const handleSplitAmount = () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      toast.error("Enter a total amount first");
+      return;
+    }
+    const newMode = splitMode === "split" ? null : "split";
+    setSplitMode(newMode);
+    if (newMode === "split" && selectedUsers.length > 0) {
+      applyMode(selectedUsers, amount, "split");
+    }
   };
 
   const handleSubmit = async () => {
@@ -108,7 +153,25 @@ export default function CreateDuePage() {
 
         {/* Amount + Currency */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">Amount</label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="text-sm font-medium text-gray-700">Total Amount</label>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={handleSplitAmount}
+                className={`rounded-lg border-2 px-2.5 py-1 text-xs font-medium transition-colors ${splitMode === "split" ? "border-[#5f59f7] bg-[#5f59f7] text-white" : "border-transparent bg-[#5f59f7]/10 text-[#5f59f7] hover:bg-[#5f59f7]/20"}`}
+              >
+                Split amount
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyToAll}
+                className={`rounded-lg border-2 px-2.5 py-1 text-xs font-medium transition-colors ${splitMode === "applyAll" ? "border-[#5f59f7] bg-[#5f59f7] text-white" : "border-transparent bg-[#5f59f7]/10 text-[#5f59f7] hover:bg-[#5f59f7]/20"}`}
+              >
+                Apply to all
+              </button>
+            </div>
+          </div>
           <div className="flex gap-2">
             <select
               value={currency}
@@ -124,7 +187,7 @@ export default function CreateDuePage() {
             <input
               type="number"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => handleAmountChange(e.target.value)}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -142,15 +205,8 @@ export default function CreateDuePage() {
         {/* Selected Users with individual amounts */}
         {selectedUsers.length > 0 && (
           <div>
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2">
               <label className="text-sm font-medium text-gray-700">User Amounts</label>
-              <button
-                type="button"
-                onClick={handleApplyToAll}
-                className="rounded-lg bg-[#5f59f7]/10 px-3 py-1.5 text-xs font-medium text-[#5f59f7] hover:bg-[#5f59f7]/20"
-              >
-                Apply {currency} {amount || "0"} to all
-              </button>
             </div>
             <div className="space-y-2">
               {selectedUsers.map((u) => (

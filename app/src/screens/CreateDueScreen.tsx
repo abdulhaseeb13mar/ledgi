@@ -47,29 +47,76 @@ export default function CreateDueScreen({ navigation }: Props) {
   );
   const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
   const [userAmounts, setUserAmounts] = useState<Record<string, string>>({});
+  const [splitMode, setSplitMode] = useState<"split" | "applyAll" | null>(null);
+
+  const applyMode = (users: AppUser[], totalAmt: string, mode: "split" | "applyAll") => {
+    const updated: Record<string, string> = {};
+    if (mode === "split") {
+      const split = (parseFloat(totalAmt) / users.length).toFixed(2);
+      for (const u of users) updated[u.uid] = split;
+    } else {
+      for (const u of users) updated[u.uid] = totalAmt;
+    }
+    setUserAmounts(updated);
+  };
+
+  const handleAmountChange = (val: string) => {
+    setAmount(val);
+    if (!val) {
+      setUserAmounts({});
+      return;
+    }
+    if (splitMode && parseFloat(val) > 0 && selectedUsers.length > 0) {
+      applyMode(selectedUsers, val, splitMode);
+    }
+  };
 
   const handleSelect = (u: AppUser) => {
-    setSelectedUsers((prev) => [...prev, u]);
-    setUserAmounts((prev) => ({ ...prev, [u.uid]: amount }));
+    const newUsers = [...selectedUsers, u];
+    setSelectedUsers(newUsers);
+    if (splitMode && amount && parseFloat(amount) > 0) {
+      applyMode(newUsers, amount, splitMode);
+    } else {
+      setUserAmounts((prev) => ({ ...prev, [u.uid]: amount }));
+    }
   };
 
   const handleRemove = (uid: string) => {
-    setSelectedUsers((prev) => prev.filter((u) => u.uid !== uid));
-    setUserAmounts((prev) => {
-      const next = { ...prev };
-      delete next[uid];
-      return next;
-    });
+    const newUsers = selectedUsers.filter((u) => u.uid !== uid);
+    setSelectedUsers(newUsers);
+    if (splitMode && amount && parseFloat(amount) > 0 && newUsers.length > 0) {
+      applyMode(newUsers, amount, splitMode);
+    } else {
+      setUserAmounts((prev) => {
+        const next = { ...prev };
+        delete next[uid];
+        return next;
+      });
+    }
   };
 
   const handleApplyToAll = () => {
-    if (!amount) {
-      Toast.show({ type: "error", text1: "Enter an amount first" });
+    if (!amount || parseFloat(amount) <= 0) {
+      Toast.show({ type: "error", text1: "Enter a total amount first" });
       return;
     }
-    const updated: Record<string, string> = {};
-    for (const u of selectedUsers) updated[u.uid] = amount;
-    setUserAmounts(updated);
+    const newMode = splitMode === "applyAll" ? null : "applyAll";
+    setSplitMode(newMode);
+    if (newMode === "applyAll" && selectedUsers.length > 0) {
+      applyMode(selectedUsers, amount, "applyAll");
+    }
+  };
+
+  const handleSplitAmount = () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      Toast.show({ type: "error", text1: "Enter a total amount first" });
+      return;
+    }
+    const newMode = splitMode === "split" ? null : "split";
+    setSplitMode(newMode);
+    if (newMode === "split" && selectedUsers.length > 0) {
+      applyMode(selectedUsers, amount, "split");
+    }
   };
 
   const handleSubmit = async () => {
@@ -148,11 +195,31 @@ export default function CreateDueScreen({ navigation }: Props) {
 
           {/* Amount */}
           <View style={styles.field}>
-            <Text style={styles.label}>Default Amount</Text>
+            <View style={styles.amountHeader}>
+              <Text style={styles.label}>Total Amount</Text>
+              <View style={styles.amountBtns}>
+                <TouchableOpacity
+                  onPress={handleSplitAmount}
+                  style={[styles.amountActionBtn, splitMode === "split" && styles.amountActionBtnActive]}
+                >
+                  <Text style={[styles.amountActionText, splitMode === "split" && styles.amountActionTextActive]}>
+                    Split amount
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleApplyToAll}
+                  style={[styles.amountActionBtn, splitMode === "applyAll" && styles.amountActionBtnActive]}
+                >
+                  <Text style={[styles.amountActionText, splitMode === "applyAll" && styles.amountActionTextActive]}>
+                    Apply to all
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
             <TextInput
               style={styles.input}
               value={amount}
-              onChangeText={setAmount}
+              onChangeText={handleAmountChange}
               placeholder="0.00"
               placeholderTextColor={colors.gray[400]}
               keyboardType="decimal-pad"
@@ -173,15 +240,7 @@ export default function CreateDueScreen({ navigation }: Props) {
           {/* Per-user amounts */}
           {selectedUsers.length > 0 && (
             <View style={styles.field}>
-              <View style={styles.perUserHeader}>
-                <Text style={styles.label}>Amounts per User</Text>
-                <TouchableOpacity
-                  onPress={handleApplyToAll}
-                  style={styles.applyAllBtn}
-                >
-                  <Text style={styles.applyAllText}>Apply to All</Text>
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.label}>Amounts per User</Text>
               <View style={styles.perUserList}>
                 {selectedUsers.map((u) => (
                   <View key={u.uid} style={styles.perUserRow}>
@@ -261,21 +320,34 @@ const styles = StyleSheet.create({
     color: colors.gray[900],
     backgroundColor: colors.white,
   },
-  perUserHeader: {
+  amountHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  applyAllBtn: {
-    backgroundColor: colors.accentLight,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.full,
+  amountBtns: {
+    flexDirection: "row",
+    gap: spacing.xs,
   },
-  applyAllText: {
+  amountActionBtn: {
+    backgroundColor: colors.accentLight,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: radius.md,
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  amountActionBtnActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  amountActionText: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.medium,
     color: colors.accent,
+  },
+  amountActionTextActive: {
+    color: colors.white,
   },
   perUserList: { gap: spacing.sm },
   perUserRow: {
