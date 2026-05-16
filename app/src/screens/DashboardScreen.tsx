@@ -265,6 +265,27 @@ export default function DashboardScreen({ navigation }: Props) {
               </View>
             )}
           </TouchableOpacity>
+
+          {/* Settings */}
+          <TouchableOpacity
+            style={[styles.actionOutline, styles.actionGray]}
+            onPress={() => navigation.navigate("Settings")}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="settings-outline"
+              size={22}
+              color={colors.gray[600]}
+            />
+            <View style={styles.actionText}>
+              <Text style={[styles.actionTitle, { color: colors.gray[700] }]}>
+                Settings
+              </Text>
+              <Text style={styles.actionSubtitle}>
+                Bank details and preferences
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </AppLayout>

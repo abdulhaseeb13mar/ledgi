@@ -6,7 +6,7 @@ import { useAuthContext } from "@/providers/auth.provider";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import { formatAmount, groupByCurrency } from "@/utils/format-currency";
 import { Link } from "@tanstack/react-router";
-import { ArrowDownLeft, ArrowUpRight, CheckCircle, Clock, Loader2, PlusCircle, Users } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, CheckCircle, Clock, Loader2, PlusCircle, Settings, Users } from "lucide-react";
 
 export default function DashboardPage() {
   const { user } = useAuthContext();
@@ -134,6 +134,17 @@ export default function DashboardPage() {
               {pendingOthersConfirmations.length > 99 ? "99+" : pendingOthersConfirmations.length}
             </div>
           )}
+        </Link>
+
+        <Link
+          to="/settings"
+          className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-gray-600 transition-colors hover:bg-gray-50"
+        >
+          <Settings size={22} />
+          <div>
+            <p className="font-semibold">Settings</p>
+            <p className="text-xs text-gray-500">Bank details and preferences</p>
+          </div>
         </Link>
       </div>
     </div>

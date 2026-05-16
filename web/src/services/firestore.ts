@@ -1,7 +1,7 @@
 import { db } from "@/lib/firebase";
 import { DEFAULT_CURRENCY } from "@/types/currency.types";
 import type { Due } from "@/types/due.types";
-import type { AppUser } from "@/types/user.types";
+import type { AppUser, BankDetail } from "@/types/user.types";
 import { collection, deleteDoc, doc, documentId, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 
 const OPEN_DUE_STATUSES: Due["status"][] = ["active", "resolve_requested"];
@@ -203,4 +203,50 @@ export async function searchUserByEmail(email: string, currentUserId: string): P
     if (user.uid !== currentUserId) return user;
   }
   return null;
+}
+
+// ─── Bank Details ─────────────────────────────────────────
+
+export async function getBankDetails(userId: string): Promise<BankDetail[]> {
+  const snap = await getDocs(collection(db, "users", userId, "bankDetails"));
+  return snap.docs
+    .map((d) => d.data() as BankDetail)
+    .sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
+}
+
+export async function addBankDetail(
+  userId: string,
+  data: { bankName: string; accountNumber: string; accountName: string },
+): Promise<void> {
+  const ref = doc(collection(db, "users", userId, "bankDetails"));
+  await setDoc(ref, { ...data, id: ref.id, createdAt: serverTimestamp() });
+}
+
+export async function updateBankDetail(
+  userId: string,
+  bankDetailId: string,
+  data: { bankName: string; accountNumber: string; accountName: string },
+): Promise<void> {
+  await updateDoc(doc(db, "users", userId, "bankDetails", bankDetailId), data);
+}
+
+export async function deleteBankDetail(userId: string, bankDetailId: string): Promise<void> {
+  await deleteDoc(doc(db, "users", userId, "bankDetails", bankDetailId));
+}
+
+// viewerId can see friendId's bank details only if friendId has added viewerId as a friend.
+// bankDetailVisibility/{viewerId} can override this (future per-friend control).
+export async function getFriendBankDetails(viewerId: string, friendId: string): Promise<BankDetail[] | null> {
+  const friendSnap = await getDoc(doc(db, "users", friendId, "friends", viewerId));
+  if (!friendSnap.exists()) return null;
+
+  const visibilitySnap = await getDoc(doc(db, "users", friendId, "bankDetailVisibility", viewerId));
+  if (visibilitySnap.exists() && visibilitySnap.data().visible === false) return null;
+
+  return getBankDetails(friendId);
+}
+
+// For future per-friend visibility control
+export async function setBankDetailVisibility(userId: string, friendId: string, visible: boolean): Promise<void> {
+  await setDoc(doc(db, "users", userId, "bankDetailVisibility", friendId), { visible });
 }

@@ -14,3 +14,11 @@ export {
 export { useSearchUsersQuery, useUserQuery, useUsersByIdsQuery, useUpdateUserCurrencyMutation } from "./users";
 
 export { useFriendsQuery, useSearchUserByEmailQuery, useAddFriendMutation, useRemoveFriendMutation } from "./friends";
+
+export {
+  useBankDetailsQuery,
+  useFriendBankDetailsQuery,
+  useAddBankDetailMutation,
+  useUpdateBankDetailMutation,
+  useDeleteBankDetailMutation,
+} from "./bank-details";

@@ -10,18 +10,23 @@ import {
 } from "@/constants/theme";
 import {
   useAddFriendMutation,
+  useFriendBankDetailsQuery,
   useFriendsQuery,
   useRemoveFriendMutation,
   useSearchUserByEmailQuery,
 } from "@/hooks/api";
 import { useAuthContext } from "@/providers/auth.provider";
+import type { AppUser } from "@/types/user.types";
 import type { RootStackParamList } from "@/navigation/types";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import debounce from "lodash.debounce";
 import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -33,10 +38,106 @@ import Toast from "react-native-toast-message";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Friends">;
 
+function BankDetailsModal({
+  viewer,
+  friend,
+  onClose,
+}: {
+  viewer: AppUser;
+  friend: AppUser;
+  onClose: () => void;
+}) {
+  const { data: bankDetails, isFetching } = useFriendBankDetailsQuery(
+    viewer.uid,
+    friend.uid,
+  );
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = async (accountNumber: string, id: string) => {
+    await Clipboard.setStringAsync(accountNumber);
+    setCopiedId(id);
+    Toast.show({ type: "success", text1: "Account number copied" });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.modalOverlay} onPress={onClose} />
+      <View style={styles.modalSheet}>
+        <View style={styles.modalHeader}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={styles.modalTitle} numberOfLines={1}>
+              {friend.name}'s Bank Details
+            </Text>
+            <Text style={styles.modalSubtitle} numberOfLines={1}>
+              {friend.email}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={onClose}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="close" size={22} color={colors.gray[500]} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.modalBody}>
+          {isFetching || bankDetails === undefined ? (
+            <View style={styles.modalCenter}>
+              <ActivityIndicator size="small" color={colors.accent} />
+              <Text style={styles.loadingText}>Loading…</Text>
+            </View>
+          ) : bankDetails === null ? (
+            <View style={styles.accessDeniedBox}>
+              <Ionicons name="lock-closed-outline" size={22} color={colors.yellow[700]} />
+              <Text style={styles.accessDeniedTitle}>Not accessible</Text>
+              <Text style={styles.accessDeniedDesc}>
+                {friend.name} hasn't added you as a friend yet. Bank details are only visible to mutual friends.
+              </Text>
+            </View>
+          ) : bankDetails.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyText}>
+                {friend.name} hasn't added any bank details yet.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.bankList}>
+              {bankDetails.map((detail) => (
+                <View key={detail.id} style={styles.bankCard}>
+                  <Text style={styles.bankName}>{detail.bankName}</Text>
+                  <View style={styles.accountRow}>
+                    <Text style={[styles.bankAccount, { flex: 1 }]} numberOfLines={1}>
+                      {detail.accountNumber}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => handleCopy(detail.accountNumber, detail.id)}
+                      style={styles.copyBtn}
+                      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                    >
+                      <Ionicons
+                        name={copiedId === detail.id ? "checkmark-outline" : "copy-outline"}
+                        size={14}
+                        color={copiedId === detail.id ? colors.green[600] : colors.gray[400]}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.bankHolder}>{detail.accountName}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function FriendsScreen({ navigation }: Props) {
-  const { user } = useAuthContext();
+  const { user, appUser } = useAuthContext();
   const [inputValue, setInputValue] = useState("");
   const [searchEmail, setSearchEmail] = useState("");
+  const [bankDetailsFriend, setBankDetailsFriend] = useState<AppUser | null>(null);
 
   const {
     data: friends = [],
@@ -185,23 +286,45 @@ export default function FriendsScreen({ navigation }: Props) {
                       {f.email}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => handleRemove(f.uid)}
-                    disabled={removeFriend.isPending}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Ionicons
-                      name="person-remove-outline"
-                      size={18}
-                      color={colors.red[400]}
-                    />
-                  </TouchableOpacity>
+                  <View style={styles.friendActions}>
+                    <TouchableOpacity
+                      style={styles.bankBtn}
+                      onPress={() => setBankDetailsFriend(f)}
+                      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                    >
+                      <Ionicons
+                        name="card-outline"
+                        size={16}
+                        color={colors.indigo[600]}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.removeBtn}
+                      onPress={() => handleRemove(f.uid)}
+                      disabled={removeFriend.isPending}
+                      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                    >
+                      <Ionicons
+                        name="person-remove-outline"
+                        size={16}
+                        color={colors.red[400]}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ))}
             </View>
           )}
         </View>
       </ScrollView>
+
+      {bankDetailsFriend && appUser && (
+        <BankDetailsModal
+          viewer={appUser}
+          friend={bankDetailsFriend}
+          onClose={() => setBankDetailsFriend(null)}
+        />
+      )}
     </AppLayout>
   );
 }
@@ -300,7 +423,7 @@ const styles = StyleSheet.create({
   friendRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md,
+    gap: spacing.sm,
     borderWidth: 1,
     borderColor: colors.gray[100],
     borderRadius: radius.xl,
@@ -308,12 +431,13 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   friendAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.accentLight,
     justifyContent: "center",
     alignItems: "center",
+    flexShrink: 0,
   },
   friendAvatarText: {
     fontSize: fontSize.base,
@@ -330,5 +454,127 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.gray[500],
     marginTop: 2,
+  },
+  friendActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    flexShrink: 0,
+  },
+  bankBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.indigo[200],
+    backgroundColor: colors.indigo[50],
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  removeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.red[200],
+    backgroundColor: colors.white,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+  },
+  modalSheet: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingBottom: spacing["3xl"],
+    maxHeight: "70%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  modalTitle: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    color: colors.gray[900],
+  },
+  modalSubtitle: {
+    fontSize: fontSize.xs,
+    color: colors.gray[500],
+    marginTop: 1,
+  },
+  modalBody: {
+    padding: spacing.xl,
+  },
+  modalCenter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing["2xl"],
+  },
+  accessDeniedBox: {
+    borderRadius: radius.lg,
+    backgroundColor: colors.yellow[100],
+    padding: spacing.lg,
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  accessDeniedTitle: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    color: colors.yellow[700],
+  },
+  accessDeniedDesc: {
+    fontSize: fontSize.xs,
+    color: colors.yellow[700],
+    textAlign: "center",
+    lineHeight: 17,
+  },
+  emptyBox: {
+    paddingVertical: spacing["2xl"],
+    alignItems: "center",
+  },
+  bankList: { gap: spacing.md },
+  bankCard: {
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    borderRadius: radius.lg,
+    backgroundColor: colors.gray[50],
+    padding: spacing.md,
+    gap: 3,
+  },
+  bankName: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    color: colors.gray[900],
+  },
+  accountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  bankAccount: {
+    fontSize: fontSize.xs,
+    color: colors.gray[500],
+    fontVariant: ["tabular-nums"],
+  },
+  copyBtn: {
+    padding: spacing.xs,
+    borderRadius: radius.sm,
+    flexShrink: 0,
+  },
+  bankHolder: {
+    fontSize: fontSize.xs,
+    color: colors.gray[600],
   },
 });

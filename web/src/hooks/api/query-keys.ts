@@ -20,3 +20,9 @@ export const friendsKeys = {
   list: (userId: string) => [...friendsKeys.all, "list", userId] as const,
   searchByEmail: (email: string) => [...friendsKeys.all, "search-email", email] as const,
 };
+
+export const bankDetailsKeys = {
+  all: ["bank-details"] as const,
+  list: (userId: string) => [...bankDetailsKeys.all, "list", userId] as const,
+  friendList: (viewerId: string, friendId: string) => [...bankDetailsKeys.all, "friend", viewerId, friendId] as const,
+};
