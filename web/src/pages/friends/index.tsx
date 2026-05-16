@@ -21,10 +21,7 @@ function BankDetailsModal({ viewer, friend, onClose }: { viewer: AppUser; friend
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40" />
-      <div
-        className="relative w-full max-w-sm rounded-2xl border border-gray-200 bg-white shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative w-full max-w-sm rounded-2xl border border-gray-200 bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div>
             <p className="text-sm font-semibold text-gray-900">{friend.name}'s Bank Details</p>
@@ -48,13 +45,13 @@ function BankDetailsModal({ viewer, friend, onClose }: { viewer: AppUser; friend
                 {friend.name} hasn't added you as a friend yet. Bank details are only visible when you're both friends.
               </p>
             </div>
-          ) : bankDetails.length === 0 ? (
+          ) : bankDetails?.length === 0 ? (
             <div className="rounded-xl bg-gray-50 px-4 py-5 text-center">
               <p className="text-sm text-gray-500">{friend.name} hasn't added any bank details yet.</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {bankDetails.map((detail) => (
+              {bankDetails?.map((detail) => (
                 <div key={detail.id} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                   <p className="text-sm font-semibold text-gray-900">{detail.bankName}</p>
                   <div className="mt-1 flex items-center gap-2">
@@ -216,13 +213,7 @@ export default function FriendsPage() {
       </div>
 
       {/* Bank Details Modal */}
-      {bankDetailsFriend && appUser && (
-        <BankDetailsModal
-          viewer={appUser}
-          friend={bankDetailsFriend}
-          onClose={() => setBankDetailsFriend(null)}
-        />
-      )}
+      {bankDetailsFriend && appUser && <BankDetailsModal viewer={appUser} friend={bankDetailsFriend} onClose={() => setBankDetailsFriend(null)} />}
     </ScrollablePageLayout>
   );
 }
