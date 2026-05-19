@@ -11,8 +11,8 @@
     "build:ledgi": "node scripts/set-app-config.mjs ledgi && tsc -b && vite build --mode ledgi",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy-kamelhisaab": "pnpm run build:kamelhisaab && firebase use kamelhisaab && firebase deploy",
-    "deploy-ledgi": "pnpm run build:ledgi && firebase deploy"
+    "deploy-kamelhisaab": "pnpm run build:kamelhisaab && firebase login:use abdul.haseeb@kamelpay.com && firebase use kamelhisaab && firebase deploy",
+    "deploy-ledgi": "pnpm run build:ledgi && firebase login:use abdulhaseeb13mar@gmail.com && firebase use ledgi && firebase deploy"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
