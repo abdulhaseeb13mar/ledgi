@@ -115,14 +115,6 @@ service cloud.firestore {
         request.resource.data.accountName.size() > 0;
     }
 
-    function canViewBankDetails(userId) {
-      return exists(/databases/$(database)/documents/users/$(userId)/friends/$(request.auth.uid)) &&
-        !(
-          exists(/databases/$(database)/documents/users/$(userId)/bankDetailVisibility/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/users/$(userId)/bankDetailVisibility/$(request.auth.uid)).data.visible == false
-        );
-    }
-
     match /users/{userId} {
       allow read: if signedIn();
       allow create: if isOwner(userId) && isValidUserDoc(userId);
@@ -130,7 +122,7 @@ service cloud.firestore {
       allow delete: if false;
 
       match /friends/{friendUid} {
-        allow read: if isOwner(userId);
+        allow read: if isOwner(userId) || (signedIn() && friendUid == request.auth.uid);
         allow create: if isOwner(userId) &&
           request.resource.data.keys().hasOnly(["uid", "createdAt"]) &&
           request.resource.data.uid == friendUid;
@@ -139,14 +131,14 @@ service cloud.firestore {
       }
 
       match /bankDetails/{bankDetailId} {
-        allow read: if isOwner(userId) || (signedIn() && canViewBankDetails(userId));
+        allow read: if signedIn();
         allow create: if isOwner(userId) && isValidBankDetail();
         allow update: if isOwner(userId) && isValidBankDetailUpdate();
         allow delete: if isOwner(userId);
       }
 
       match /bankDetailVisibility/{viewerId} {
-        allow read: if isOwner(userId);
+        allow read: if isOwner(userId) || (signedIn() && viewerId == request.auth.uid);
         allow write: if isOwner(userId) &&
           request.resource.data.keys().hasOnly(["visible"]) &&
           request.resource.data.visible is bool;
