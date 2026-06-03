@@ -132,6 +132,9 @@ export async function getDuesUserOwesToMe(myId: string, owerId: string): Promise
 }
 
 export async function requestResolve(dueIds: string[]): Promise<void> {
+  const dueDocs = await Promise.all(dueIds.map((id) => getDoc(doc(db, "dues", id))));
+  const dues = dueDocs.map((d) => d.data() as Due).filter(Boolean);
+
   const batch = writeBatch(db);
   for (const id of dueIds) {
     batch.update(doc(db, "dues", id), {
@@ -140,9 +143,43 @@ export async function requestResolve(dueIds: string[]): Promise<void> {
     });
   }
   await batch.commit();
+
+  const owerId = dues[0]?.owerId;
+  if (!owerId) return;
+  const ower = await getUserById(owerId);
+  if (!ower) return;
+
+  const byCreator = new Map<string, Due[]>();
+  for (const due of dues) {
+    const list = byCreator.get(due.creatorId) ?? [];
+    list.push(due);
+    byCreator.set(due.creatorId, list);
+  }
+
+  const creators = await getUsersByIds([...byCreator.keys()]);
+  const creatorMap = new Map(creators.map((u) => [u.uid, u]));
+
+  const mailBatch = writeBatch(db);
+  for (const [creatorId, creatorDues] of byCreator) {
+    const creator = creatorMap.get(creatorId);
+    if (!creator) continue;
+    const count = creatorDues.length;
+    const label = count === 1 ? "a due" : `${count} dues`;
+    mailBatch.set(doc(collection(db, "mail")), {
+      to: creator.email,
+      message: {
+        subject: `${ower.name} is requesting to settle ${label}`,
+        text: `Hi ${creator.name}, ${ower.name} has marked ${label} as paid and is requesting your confirmation. Log in to Khaata Ledger to confirm or reject.`,
+      },
+    });
+  }
+  await mailBatch.commit();
 }
 
 export async function confirmResolve(dueIds: string[]): Promise<void> {
+  const dueDocs = await Promise.all(dueIds.map((id) => getDoc(doc(db, "dues", id))));
+  const dues = dueDocs.map((d) => d.data() as Due).filter(Boolean);
+
   const batch = writeBatch(db);
   for (const id of dueIds) {
     batch.update(doc(db, "dues", id), {
@@ -150,6 +187,37 @@ export async function confirmResolve(dueIds: string[]): Promise<void> {
     });
   }
   await batch.commit();
+
+  const creatorId = dues[0]?.creatorId;
+  if (!creatorId) return;
+  const creator = await getUserById(creatorId);
+  if (!creator) return;
+
+  const byOwer = new Map<string, Due[]>();
+  for (const due of dues) {
+    const list = byOwer.get(due.owerId) ?? [];
+    list.push(due);
+    byOwer.set(due.owerId, list);
+  }
+
+  const owers = await getUsersByIds([...byOwer.keys()]);
+  const owerMap = new Map(owers.map((u) => [u.uid, u]));
+
+  const mailBatch = writeBatch(db);
+  for (const [owerId, owerDues] of byOwer) {
+    const ower = owerMap.get(owerId);
+    if (!ower) continue;
+    const count = owerDues.length;
+    const label = count === 1 ? "your due" : `${count} of your dues`;
+    mailBatch.set(doc(collection(db, "mail")), {
+      to: ower.email,
+      message: {
+        subject: `${creator.name} confirmed ${count === 1 ? "a due" : `${count} dues`} as settled`,
+        text: `Hi ${ower.name}, ${creator.name} has confirmed ${label} as settled. Log in to Khaata Ledger to view.`,
+      },
+    });
+  }
+  await mailBatch.commit();
 }
 
 export async function rejectResolve(dueIds: string[]): Promise<void> {
