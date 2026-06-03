@@ -165,11 +165,14 @@ export async function requestResolve(dueIds: string[]): Promise<void> {
     if (!creator) continue;
     const count = creatorDues.length;
     const label = count === 1 ? "a due" : `${count} dues`;
+    const duesList = creatorDues
+      .map((d) => `• "${d.description}" — ${d.currency ? `${d.currency} ` : ""}${d.amount}`)
+      .join("\n");
     mailBatch.set(doc(collection(db, "mail")), {
       to: creator.email,
       message: {
         subject: `${ower.name} is requesting to settle ${label}`,
-        text: `Hi ${creator.name}, ${ower.name} has marked ${label} as paid and is requesting your confirmation. Log in to Khaata Ledger to confirm or reject.`,
+        text: `Hi ${creator.name}, ${ower.name} has marked the following ${label} as paid and is requesting your confirmation:\n\n${duesList}\n\nLog in to Khaata Ledger to confirm or reject: https://khaata-ledger.web.app`,
       },
     });
   }
@@ -208,12 +211,14 @@ export async function confirmResolve(dueIds: string[]): Promise<void> {
     const ower = owerMap.get(owerId);
     if (!ower) continue;
     const count = owerDues.length;
-    const label = count === 1 ? "your due" : `${count} of your dues`;
+    const duesList = owerDues
+      .map((d) => `• "${d.description}" — ${d.currency ? `${d.currency} ` : ""}${d.amount}`)
+      .join("\n");
     mailBatch.set(doc(collection(db, "mail")), {
       to: ower.email,
       message: {
         subject: `${creator.name} confirmed ${count === 1 ? "a due" : `${count} dues`} as settled`,
-        text: `Hi ${ower.name}, ${creator.name} has confirmed ${label} as settled. Log in to Khaata Ledger to view.`,
+        text: `Hi ${ower.name}, ${creator.name} has confirmed the following ${count === 1 ? "due" : "dues"} as settled:\n\n${duesList}`,
       },
     });
   }
@@ -277,15 +282,10 @@ export async function searchUserByEmail(email: string, currentUserId: string): P
 
 export async function getBankDetails(userId: string): Promise<BankDetail[]> {
   const snap = await getDocs(collection(db, "users", userId, "bankDetails"));
-  return snap.docs
-    .map((d) => d.data() as BankDetail)
-    .sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
+  return snap.docs.map((d) => d.data() as BankDetail).sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
 }
 
-export async function addBankDetail(
-  userId: string,
-  data: { bankName: string; accountNumber: string; accountName: string },
-): Promise<void> {
+export async function addBankDetail(userId: string, data: { bankName: string; accountNumber: string; accountName: string }): Promise<void> {
   const ref = doc(collection(db, "users", userId, "bankDetails"));
   await setDoc(ref, { ...data, id: ref.id, createdAt: serverTimestamp() });
 }

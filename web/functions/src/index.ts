@@ -27,7 +27,7 @@ export const onDueCreated = onDocumentCreated("dues/{dueId}", async (event) => {
   await sendMail(
     ower.email,
     `${creator.name} added a due for you`,
-    `Hi ${ower.name}, ${creator.name} has recorded a due for you: "${due.description}" — ${due.currency} ${due.amount}. Log in to Khaata Ledger to view it.`,
+    `Hi ${ower.name}, ${creator.name} has recorded a due for you: "${due.description}", ${due.currency} ${due.amount}. Log in to Khaata Ledger to view it: https://khaata-ledger.web.app.`,
   );
 });
 
@@ -38,5 +38,9 @@ export const onFriendAdded = onDocumentCreated("users/{userId}/friends/{friendId
   const [adder, added] = await Promise.all([getUserInfo(userId), getUserInfo(friendId)]);
   if (!adder || !added) return;
 
-  await sendMail(added.email, `${adder.name} added you as a friend`, `Hi ${added.name}, ${adder.name} has added you as a friend on Khaata Ledger.`);
+  await sendMail(
+    added.email,
+    `${adder.name} added you as a friend`,
+    `Hi ${added.name}, ${adder.name} has added you as a friend on Khaata Ledger. Log in to Khaata Ledger to view it: https://khaata-ledger.web.app.`,
+  );
 });
