@@ -23,7 +23,8 @@ service cloud.firestore {
         "name",
         "email",
         "emailLowercase",
-        "createdAt"
+        "createdAt",
+        "preferredCurrency"
       ]) &&
       request.resource.data.uid == userId &&
       request.resource.data.name is string &&

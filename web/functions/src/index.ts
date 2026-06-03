@@ -4,6 +4,7 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 
 initializeApp();
 const db = getFirestore();
+const APP_URL = process.env.APP_URL ?? "https://khaata-ledger.web.app";
 
 async function getUserInfo(uid: string): Promise<{ name: string; email: string } | null> {
   const snap = await db.collection("users").doc(uid).get();
@@ -27,7 +28,7 @@ export const onDueCreated = onDocumentCreated("dues/{dueId}", async (event) => {
   await sendMail(
     ower.email,
     `${creator.name} added a due for you`,
-    `Hi ${ower.name}, ${creator.name} has recorded a due for you: "${due.description}", ${due.currency} ${due.amount}. Log in to Khaata Ledger to view it: https://khaata-ledger.web.app.`,
+    `Hi ${ower.name}, ${creator.name} has recorded a due for you: "${due.description}", ${due.currency} ${due.amount}. Log in to view it: ${APP_URL}`,
   );
 });
 
@@ -41,6 +42,6 @@ export const onFriendAdded = onDocumentCreated("users/{userId}/friends/{friendId
   await sendMail(
     added.email,
     `${adder.name} added you as a friend`,
-    `Hi ${added.name}, ${adder.name} has added you as a friend on Khaata Ledger. Log in to Khaata Ledger to view it: https://khaata-ledger.web.app.`,
+    `Hi ${added.name}, ${adder.name} has added you as a friend. Log in to view it: ${APP_URL}`,
   );
 });

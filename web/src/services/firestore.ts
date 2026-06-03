@@ -172,7 +172,7 @@ export async function requestResolve(dueIds: string[]): Promise<void> {
       to: creator.email,
       message: {
         subject: `${ower.name} is requesting to settle ${label}`,
-        text: `Hi ${creator.name}, ${ower.name} has marked the following ${label} as paid and is requesting your confirmation:\n\n${duesList}\n\nLog in to Khaata Ledger to confirm or reject: https://khaata-ledger.web.app`,
+        text: `Hi ${creator.name}, ${ower.name} has marked the following ${label} as paid and is requesting your confirmation:\n\n${duesList}\n\nLog in to confirm or reject: ${import.meta.env.VITE_APP_URL}`,
       },
     });
   }
