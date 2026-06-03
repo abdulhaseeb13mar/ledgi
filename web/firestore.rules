@@ -95,6 +95,34 @@ service cloud.firestore {
       request.resource.data.resolveRequestedAt == null;
     }
 
+    function isValidBankDetail() {
+      return request.resource.data.keys().hasOnly(["id", "bankName", "accountNumber", "accountName", "createdAt"]) &&
+        request.resource.data.bankName is string &&
+        request.resource.data.bankName.size() > 0 &&
+        request.resource.data.accountNumber is string &&
+        request.resource.data.accountNumber.size() > 0 &&
+        request.resource.data.accountName is string &&
+        request.resource.data.accountName.size() > 0;
+    }
+
+    function isValidBankDetailUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(["bankName", "accountNumber", "accountName"]) &&
+        request.resource.data.bankName is string &&
+        request.resource.data.bankName.size() > 0 &&
+        request.resource.data.accountNumber is string &&
+        request.resource.data.accountNumber.size() > 0 &&
+        request.resource.data.accountName is string &&
+        request.resource.data.accountName.size() > 0;
+    }
+
+    function canViewBankDetails(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId)/friends/$(request.auth.uid)) &&
+        !(
+          exists(/databases/$(database)/documents/users/$(userId)/bankDetailVisibility/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(userId)/bankDetailVisibility/$(request.auth.uid)).data.visible == false
+        );
+    }
+
     match /users/{userId} {
       allow read: if signedIn();
       allow create: if isOwner(userId) && isValidUserDoc(userId);
@@ -108,6 +136,20 @@ service cloud.firestore {
           request.resource.data.uid == friendUid;
         allow delete: if isOwner(userId);
         allow update: if false;
+      }
+
+      match /bankDetails/{bankDetailId} {
+        allow read: if isOwner(userId) || (signedIn() && canViewBankDetails(userId));
+        allow create: if isOwner(userId) && isValidBankDetail();
+        allow update: if isOwner(userId) && isValidBankDetailUpdate();
+        allow delete: if isOwner(userId);
+      }
+
+      match /bankDetailVisibility/{viewerId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) &&
+          request.resource.data.keys().hasOnly(["visible"]) &&
+          request.resource.data.visible is bool;
       }
     }
 
